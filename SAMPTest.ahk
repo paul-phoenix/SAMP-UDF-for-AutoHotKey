@@ -1,4 +1,4 @@
-﻿#NoEnv
+#NoEnv
 #SingleInstance force
 #include %A_ScriptDir%\SAMP.ahk
 initZonesAndCities()
@@ -39,4 +39,7 @@ Numpad5::
 	
 	; Befehl senden
 	sendChatMessage("/b und Befehle ausführen.")
+	
+	; HP und Rüstung anzeigen
+	showGameText("~r~Health: ~g~" . getPlayerHealth() . "~w~~n~~r~Armor: ~g~" . getPlayerArmor() . "~w~", 10000, 4)
 	return

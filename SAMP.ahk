@@ -1,4 +1,4 @@
-﻿; #### SAMP UDF r1####
+; #### SAMP UDF r2####
 ; Written by Chuck_Floyd @ gtawc.net
 ; https://github.com/FrozenBrain/SAMP-UDF-for-AutoHotKey
 ; Do not remove these lines.
@@ -25,6 +25,9 @@ global ADDR_ZONECODE				:= 0xA49AD4
 global ADDR_POSITION_X				:= 0xB6F2E4
 global ADDR_POSITION_Y				:= 0xB6F2E8
 global ADDR_POSITION_Z				:= 0xB6F2EC
+global ADDR_CPED_PTR				:= 0xB6F5F0
+global ADDR_CPED_HPOFF				:= 0x540
+global ADDR_CPED_ARMOROFF			:= 0x548
 global ADDR_VEHICLE_PTR				:= 0xBA18FC
 global ADDR_VEHICLE_HPOFF			:= 0x4C0
 
@@ -37,6 +40,7 @@ global ADDR_SAMP_CHATMSG_PTR_OFF	:= 0x152
 global FUNC_SAMP_SENDCMD			:= 0x60C30
 global FUNC_SAMP_SENDSAY			:= 0x4A10
 global FUNC_SAMP_ADDTOCHATWND		:= 0x5F890
+global FUNC_SAMP_SHOWGAMETEXT		:= 0x91D80
 
 ; Größen
 global SIZE_SAMP_CHATMSG			:= 0xFC
@@ -45,6 +49,11 @@ global SIZE_SAMP_CHATMSG			:= 0xFC
 global hGTA							:= 0x0
 global dwGTAPID						:= 0x0
 global dwSAMP						:= 0x0
+global pMemory						:= 0x0
+global pParam1						:= 0x0
+global pParam2						:= 0x0
+global pParam3						:= 0x0
+global pInjectFunc					:= 0x0
 global nZone						:= 0
 global nCity						:= 0
 
@@ -54,6 +63,11 @@ global nCity						:= 0
 ; #		- getUsername()								Liest den Namen des Spielers aus								#
 ; #		- sendChatMessage(wText)					Sendet eine Nachricht od. einen Befehl direkt an den Server		#
 ; #		- addMessageToChatWindow(wText)				Fügt eine Zeile in den Chat ein (nur für den Spieler sichtbar)	#
+; # 	- showGameText(wText, dwTime, dwTextsize)	Zeigt einen Text inmitten des Bildschirmes an					#
+; ###################################################################################################################
+; # Spielerfunktionen:																								#
+; # 	- getPlayerHealth()							Ermittelt die HP des Spielers									#
+; #		- getPlayerArmor()							Ermittelt den Rüstungswert des Spielers							#
 ; ###################################################################################################################
 ; # Fahrzeugfunktionen:																								#
 ; #		- getVehicleHealth()						Ermittelt die HP des Fahrzeugs, in dem der Spieler sitzt		#
@@ -144,29 +158,7 @@ sendChatMessage(wText) {
 		dwFunc := dwSAMP + FUNC_SAMP_SENDSAY
 	}
 	
-	pParam := virtualAllocEx(hGTA, StrLen(wText), 0x1000 | 0x2000, 0x40)
-	if(ErrorLevel) {
-		ErrorLevel := ERROR_ALLOC_MEMORY
-		return false
-	}
-	
-	writeString(hGTA, pParam, wText)
-	if(ErrorLevel) {
-		virtualFreeEx(hGTA, pParam, 0, 0x8000)
-		ErrorLevel := ERROR_WRITE_MEMORY
-		return false
-	}
-	
-	hThread := createRemoteThread(hGTA, 0, 0, dwFunc, pParam, 0, 0)
-	if(ErrorLevel) {
-		virtualFreeEx(hGTA, pParam, 0, 0x8000)
-		ErrorLevel := ERROR_CREATE_THREAD
-		return false
-	}
-	
-	waitForSingleObject(hThread, 0xFFFFFFFF)
-	
-	virtualFreeEx(hGTA, pParam, 0, 0x8000)
+	callWithParams(hGTA, dwFunc, [["s", wText]], false)
 	
 	ErrorLevel := ERROR_OK
 	return true
@@ -183,59 +175,66 @@ addMessageToChatWindow(wText) {
 		return false
 	}
 	
-	; Text
-	pParam := virtualAllocEx(hGTA, StrLen(wText), 0x1000 | 0x2000, 0x40)
-	if(ErrorLevel) {
-		ErrorLevel := ERROR_ALLOC_MEMORY
-		return false
-	}
-	
-	writeString(hGTA, pParam, wText)
-	if(ErrorLevel) {
-		virtualFreeEx(hGTA, pParam, 0, 0x8000)
-		ErrorLevel := ERROR_WRITE_MEMORY
-		return false
-	}
-	
-	; Func
-	pCallFunc := virtualAllocEx(hGTA, 20, 0x1000 | 0x2000, 0x40)
-	if(ErrorLevel) {
-		virtualFreeEx(hGTA, pParam, 0, 0x8000)
-		ErrorLevel := ERROR_ALLOC_MEMORY
-		return false
-	}
-	
-	funcString := "B8" . __toLittleEndian(__toHex(dwChatInfo))					; MOV EAX, dwChatInfo
-	funcString .= "68" . __toLittleEndian(__toHex(pParam))						; PUSH pParam
-	funcString .= "50"															; PUSH EAX
-	funcString .= "E8" . __toLittleEndian(__toHex(dwFunc - (pCallFunc + 16)))	; CALL dwFunc
-	funcString .= "83C408"														; ADD ESP,8
-	funcString .= "C3"															; RETN
-	writeRaw(hGTA, pCallFunc, funcString, 20)
-	if(ErrorLevel) {
-		virtualFreeEx(hGTA, pParam, 0, 0x8000)
-		virtualFreeEx(hGTA, pCallFunc, 0, 0x8000)
-		ErrorLevel := ERROR_WRITE_MEMORY
-		return false
-	}
-	
-	hThread := createRemoteThread(hGTA, 0, 0, pCallFunc, 0, 0, 0)
-	if(ErrorLevel) {
-		virtualFreeEx(hGTA, pParam, 0, 0x8000)
-		virtualFreeEx(hGTA, pCallFunc, 0, 0x8000)
-		ErrorLevel := ERROR_CREATE_THREAD
-		return false
-	}
-	
-	waitForSingleObject(hThread, 0xFFFFFFFF)
-	
-	virtualFreeEx(hGTA, pParam, 0, 0x8000)
-	virtualFreeEx(hGTA, pCallFunc, 0, 0x8000)
+	callWithParams(hGTA, dwFunc, [["p", dwChatInfo], ["s", wText]], true)
 	
 	ErrorLevel := ERROR_OK
 	return true
 }
 
+showGameText(wText, dwTime, dwSize) {
+	if(!checkHandles())
+		return false
+	
+	dwFunc := dwSAMP + FUNC_SAMP_SHOWGAMETEXT
+	
+	callWithParams(hGTA, dwFunc, [["s", wText], ["i", dwTime], ["i", dwSize]], false)
+	
+	ErrorLevel := ERROR_OK
+	return true
+}
+
+; ##### Spielerfunktionen #####
+getPlayerHealth() {
+	if(!checkHandles())
+		return 0.0
+	
+	dwCPedPtr := readDWORD(hGTA, ADDR_CPED_PTR)
+	if(ErrorLevel) {
+		ErrorLevel := ERROR_READ_MEMORY
+		return 0.0
+	}
+	
+	dwAddr := dwCPedPtr + ADDR_CPED_HPOFF
+	fHealth := readFloat(hGTA, dwAddr)
+	if(ErrorLevel) {
+		ErrorLevel := ERROR_READ_MEMORY
+		return 0.0
+	}
+	
+	ErrorLevel := ERROR_OK
+	return Round(fHealth, 2)
+}
+
+getPlayerArmor() {
+	if(!checkHandles())
+		return 0.0
+	
+	dwCPedPtr := readDWORD(hGTA, ADDR_CPED_PTR)
+	if(ErrorLevel) {
+		ErrorLevel := ERROR_READ_MEMORY
+		return 0.0
+	}
+	
+	dwAddr := dwCPedPtr + ADDR_CPED_ARMOROFF
+	fHealth := readFloat(hGTA, dwAddr)
+	if(ErrorLevel) {
+		ErrorLevel := ERROR_READ_MEMORY
+		return 0.0
+	}
+	
+	ErrorLevel := ERROR_OK
+	return Round(fHealth, 2)
+}
 ; ##### Fahrzeugfunktionen #####
 getVehicleHealth() {
 	if(!checkHandles())
@@ -753,32 +752,63 @@ AddCity(sName, x1, y1, z1, x2, y2, z2) {
 
 ; ##### Sonstiges #####
 checkHandles() {
+	if(!refreshGTA() || !refreshSAMP() || !refreshMemory()) {
+		return false
+	} else {
+		return true
+	}
+	
+	return true
+}
+
+refreshGTA() {
 	newPID := getPID("gta_sa.exe")
-	if(!newPID) {
-		hGTA		:= 0x0
-		dwSAMP		:= 0x0
-		ErrorLevel	:= ERROR_PROCESS_NOT_FOUND
+	if(!newPID) {							; GTA nicht gefunden
+		if(hGTA) {							; Handle offen
+			virtualFreeEx(hGTA, pMemory, 0, 0x8000)
+			closeProcess(hGTA)
+			hGTA := 0x0
+		}
+		dwGTAPID := 0
+		hGTA := 0x0
+		dwSAMP := 0x0
 		return false
 	}
 	
-	if(!hGTA || (dwGTAPID != newPID)) {
+	if(!hGTA || (dwGTAPID != newPID)) {		; PID geändert / Handle geschlossen
 		hGTA := openProcess(newPID)
-		if(!hGTA) {
-			dwGTAPID	:= 0x0
-			dwSAMP		:= 0x0
+		if(ErrorLevel) {					; openProcess fehlgeschlagen
+			dwGTAPID := 0
+			hGTA := 0x0
+			dwSAMP := 0x0
 			return false
 		}
 		dwGTAPID := newPID
+		dwSAMP := 0x0
+		return true
 	}
+	return true
+}
+
+refreshSAMP() {
+	if(dwSAMP)
+		return true
 	
-	dwSAMP := getModuleBaseAddress("samp.dll", dwGTAPID)
-	if(!dwSAMP) {
-		closeProcess(hGTA)
-		dwGTAPID	:= 0x0
-		hGTA		:= 0x0
+	dwSAMP := getModuleBaseAddress("samp.dll", hGTA)
+	if(!dwSAMP)
 		return false
-	}
 	
+	return true
+}
+
+refreshMemory() {
+	if(!pMemory) {
+		pMemory 	:= virtualAllocEx(hGTA, 4096, 0x1000 | 0x2000, 0x40)
+		pParam1 	:= pMemory
+		pParam2 	:= pMemory + 1024
+		pParam3 	:= pMemory + 2048
+		pInjectFunc := pMemory + 3072
+	}
 	return true
 }
 
@@ -822,20 +852,14 @@ closeProcess(hProcess) {
 	ErrorLevel := ERROR_OK
 }
 
-getModuleBaseAddress(sModule, dwPID) {
+getModuleBaseAddress(sModule, hProcess) {
 	if(!sModule) {
 		ErrorLevel := ERROR_MODULE_NOT_FOUND
 		return 0
 	}
 	
-	if(!dwPID) {
-		ErrorLevel := ERROR_PROCESS_NOT_FOUND
-		return 0
-	}
-	
-	hProcess := openProcess(dwPID, 0x0400 | 0x0010)
-	if(ErrorLevel) {
-		ErrorLevel := ERROR_OPEN_PROCESS
+	if(!hProcess) {
+		ErrorLevel := ERROR_INVALID_HANDLE
 		return 0
 	}
 	
@@ -849,7 +873,6 @@ getModuleBaseAddress(sModule, dwPID) {
 						, "UInt*", cbNeeded
 						, "UInt")
 	if(dwRet == 0) {
-		closeProcess(hProcess)
 		ErrorLevel := ERROR_ENUM_PROCESS_MODULES
 		return 0
 	}
@@ -867,14 +890,12 @@ getModuleBaseAddress(sModule, dwPID) {
 				, "UInt", 260)
 		SplitPath, sCurModule, sFilename
 		if(sModule == sFilename) {
-			closeProcess(hProcess)
 			ErrorLevel := ERROR_OK
 			return hModule
 		}
 		i := i + 1
 	}
 	
-	closeProcess(hProcess)
 	ErrorLevel := ERROR_MODULE_NOT_FOUND
 	return 0
 }
@@ -959,7 +980,7 @@ writeString(hProcess, dwAddress, wString) {
 						, "UInt", hProcess
 						, "UInt", dwAddress
 						, "Str", sString
-						, "UInt", StrLen(wString)
+						, "UInt", StrLen(wString) + 1
 						, "UInt", 0
 						, "UInt")
 	if(dwRet == 0) {
@@ -971,34 +992,87 @@ writeString(hProcess, dwAddress, wString) {
 	return true
 }
 
-writeRaw(hProcess, dwAddress, data, dwLen) {
+writeRaw(hProcess, dwAddress, pBuffer, dwLen) {
 	if(!hProcess) {
 		ErrorLevel := ERROR_INVALID_HANDLE
 		return false
 	}
 	
-	nBytes := StrLen(data) / 2
-	
-	i := 0
-	while(i < nBytes) {
-		write := "0x" . SubStr(data, 1 + (i*2), 2)
-		write += 0
-		dwRet := DllCall(	"WriteProcessMemory"
-							, "UInt", hProcess
-							, "UInt", dwAddress + i
-							, "Str", Chr(write)
-							, "UInt", 1
-							, "UInt", 0
-							, "UInt")
-		i += 1
-	}
-	
+	dwRet := DllCall(	"WriteProcessMemory"
+						, "UInt", hProcess
+						, "UInt", dwAddress
+						, "UInt", pBuffer
+						, "UInt", dwLen
+						, "UInt", 0
+						, "UInt")
 	if(dwRet == 0) {
 		ErrorLEvel := ERROR_WRITE_MEMORY
 		return false
 	}
 	
 	ErrorLevel := ERROR_OK
+	return true
+}
+
+callWithParams(hProcess, dwFunc, aParams, bCleanupStack = true) {
+	if(!hProcess) {
+		ErrorLevel := ERROR_INVALID_HANDLE
+		return false
+	}
+	validParams := 0
+	
+	i := aParams.MaxIndex()
+	
+	;		 i * PUSH + CALL + RETN
+	dwLen := i * 5    + 5    + 1
+	if(bCleanupStack)
+		dwLen += 3
+	VarSetCapacity(injectData, i * 5    + 5	   + 3       + 1, 0)
+	
+	while(i > 0) {
+		if(aParams[i][1] != "") {
+			dwMemAddress := pParam%i%
+			if(aParams[i][1] == "p") {
+				dwMemAddress := aParams[i][2]
+			} else if(aParams[i][1] == "s") {
+				writeString(hProcess, dwMemAddress, aParams[i][2])
+				if(ErrorLevel)
+					return false
+			} else if(aParams[i][1] == "i") {
+				dwMemAddress := aParams[i][2]
+			} else {
+				return false
+			}
+			NumPut(0x68, injectData, validParams * 5, "UChar")
+			NumPut(dwMemAddress, injectData, validParams * 5 + 1, "UInt")
+			validParams += 1
+		}
+		i -= 1
+	}
+	
+	offset := dwFunc - ( pInjectFunc + validParams * 5 + 5 )
+	NumPut(0xE8, injectData, validParams * 5, "UChar")
+	NumPut(offset, injectData, validParams * 5 + 1, "Int")
+	
+	if(bCleanupStack) {
+		NumPut(0xC483, injectData, validParams * 5 + 5, "UShort")
+		NumPut(validParams*4, injectData, validParams * 5 + 7, "UChar")
+		
+		NumPut(0xC3, injectData, validParams * 5 + 8, "UChar")
+	} else {
+		NumPut(0xC3, injectData, validParams * 5 + 5, "UChar")
+	}
+	
+	writeRaw(hGTA, pInjectFunc, &injectData, dwLen)
+	if(ErrorLevel)
+		return false
+	
+	hThread := createRemoteThread(hGTA, 0, 0, pInjectFunc, 0, 0, 0)
+	if(ErrorLevel)
+		return false
+	
+	waitForSingleObject(hThread, 0xFFFFFFFF)
+	
 	return true
 }
 
@@ -1143,35 +1217,45 @@ __unicodeToAnsi(wString, nLen = 0) {
 	return sString
 }
 
-__toHex(iIn) {
+__toHex(dwIn, dwNewLen = 8) {
 	oldFormat := A_FormatInteger
-	if(iIn >= 0) {
-		out := iIn
+	if(dwIn >= 0) {
+		hexOut := dwIn
 	} else {
-		out := 0xFFFFFFFF + iIn + 1
+		hexOut := 0xFFFFFFFF + dwIn + 0x1
 	}
 	SetFormat, Integer, H
-	out += 0
-	out := SubStr(out, 3)
+	hexOut += 0
+	hexOut := SubStr(hexOut, 3)
 	SetFormat, Integer, %oldFormat%
-	return out
+	
+	while(StrLen(hexOut) < dwNewLen) {
+		hexOut := "0" . hexOut
+	}
+	
+	if(StrLen(hexOut) > dwNewLen)
+		hexOut := SubStr(hexOut, -dwNewLen + 1)
+	
+	return "0x" . hexOut
 }
 
 __toLittleEndian(hexIn) {
-	if(Mod(StrLen(hexIn), 2) > 0) {
+	hexIn := SubStr(hexIn, 3)
+	dwInLen := StrLen(hexIn)
+	hexOut := ""
+	
+	if(Mod(dwInLen, 2) > 0) {
 		hexIn := "0" . hexIn
+		dwInLen += 1
 	}
 	
-	nBytes := (StrLen(hexIn) / 2)
-	hexOut := ""
+	nBytes := (dwInLen / 2)
 	
 	i := 0
 	while(i < nBytes) {
 		hexOut := hexOut . SubStr(hexIn, -(i*2)-1, 2)
 		i += 1
 	}
-	while(StrLen(hexOut) < 8) {
-		hexOut := hexOut . "0"
-	}
-	return hexOut
+	
+	return "0x" . hexOut
 }

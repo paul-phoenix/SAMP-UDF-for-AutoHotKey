@@ -1246,7 +1246,7 @@ checkHandles() {
 }
 
 refreshGTA() {
-	newPID := getPID("gta_sa.exe")
+	newPID := getPID("rgn_ac_gta.exe")
 	if(!newPID) {							; GTA nicht gefunden
 		if(hGTA) {							; Handle offen
 			virtualFreeEx(hGTA, pMemory, 0, 0x8000)
@@ -1411,7 +1411,8 @@ readString(hProcess, dwAddress, dwLen) {
 	}
 	
 	ErrorLevel := ERROR_OK
-	return __ansiToUnicode(sRead)
+	;return __ansiToUnicode(sRead)
+	return sRead
 }
 
 readFloat(hProcess, dwAddress) {
@@ -1509,7 +1510,8 @@ writeString(hProcess, dwAddress, wString) {
 		return false
 	}
 	
-	sString := __unicodeToAnsi(wString)
+	;sString := __unicodeToAnsi(wString)
+	sString := wString
 	
 	dwRet := DllCall(	"WriteProcessMemory"
 						, "UInt", hProcess

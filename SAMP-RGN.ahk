@@ -1246,7 +1246,7 @@ checkHandles() {
 }
 
 refreshGTA() {
-	newPID := getPID("gta_sa.exe")
+	newPID := getPID("rgn_ac_gta.exe")
 	if(!newPID) {							; GTA nicht gefunden
 		if(hGTA) {							; Handle offen
 			virtualFreeEx(hGTA, pMemory, 0, 0x8000)

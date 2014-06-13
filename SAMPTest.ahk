@@ -1,45 +1,82 @@
+﻿SendMode Input
+SetWorkingDir %A_ScriptDir%
+;#Warn
+#UseHook
 #NoEnv
 #SingleInstance force
 #include %A_ScriptDir%\SAMP.ahk
-initZonesAndCities()
+
+Hotkey, Enter, Off
+Hotkey, Escape, Off
 return
 
-; Test für die SAMP UDF für AutoHotKey
-; Zum Testen <NUM5> im Spiel drücken.
++T:: 
+~t::
+Suspend On
+Hotkey, Enter, On
+Hotkey, Escape, On
+Hotkey, t, Off
+return
+
+~NumpadEnter::
+~Enter::
+Suspend Permit
+Suspend Off
+Hotkey, t, On
+Hotkey, Enter, Off
+Hotkey, Escape, Off
+return
+
+~Escape::
+Suspend Permit
+Suspend Off
+Hotkey, t, On
+Hotkey, Enter, Off
+Hotkey, Escape, Off
+return
+
+
+;#########################################################################################################
+
+
+;Gebt einen Spielernamen ein, um weitere Infos über diesen Spieler zu bekommen
+Numpad1::
+SendInput tName:{Space}
+Input varName, V I M,{enter}
+SendInput {end}+{home}{Del}{esc}
+updateScoreboardData()
+varID := getPlayerIdByName(varName)
+showGameText(getPlayerNameById(varID) "~n~Score: " getPlayerScoreById(varID) "~n~Ping: " getPlayerPingById(varID), 2000, 5)
+return
+
+;Gebt eine ID ein, um weitere Infos über diesen Spieler zu bekommen
+Numpad2::
+SendInput tID:{Space}
+Input varID, V I M,{enter}
+SendInput {end}+{home}{Del}{esc}
+updateScoreboardData()
+showGameText(getPlayerNameById(varID) "~n~Score: " getPlayerScoreById(varID) "~n~Ping: " getPlayerPingById(varID), 2000, 5)
+return
+
+;Spielt einen "Audio Stream" ab
+Numpad3::
+playAudioStream("http://breakz.us/radio/listen.pls")
+return
+
+;Stoppt einen "Audio Stream"
+Numpad4::
+stopAudioStream()
+return
+
+;Zeigt diverse Infos über die eigene Spielerfigur an
 Numpad5::
-	; Chatstatus vorbereiten
-	msg := "{FFAA00}bist{FFFF00} momentan {FFAA00}nicht{FFFF00}"
-	if(isInChat())
-		msg := "{FFAA00}bist{FFFF00} momentan {FFFF00}"
-	
-	; Koordinaten auslesen
-	coords := getCoordinates()
-	
-	; Position aus den Koordinaten errechnen
-	position := calculateZone(coords[1], coords[2], coords[3]) . " - " . calculateCity(coords[1], coords[2], coords[3])
-	
-	; Text in den Chat schreiben ({FFFF00} = gelb, {FFAA00} = orange)
-	; Hallo <Username>.
-	addMessageToChatWindow("{FFFF00}Hallo {FFAA00}" . getUsername() . "{FFFF00}.")
-	; Du bist momentan (nicht) in einem Dialog oder im Chat.
-	addMessageToChatWindow("{FFFF00}Du " . msg . " in einem Dialog oder im Chat.")
-	; Dein Fahrzeug hat <HP> HP und du befindest dich bei genau
-	addMessageToChatWindow("{FFFF00}Dein Fahrzeug hat {FFAA00}" . getVehicleHealth() . " HP{FFFF00} und befindest dich bei genau")
-	; (<X>|<Y>|<Z>), das liegt in <Position>.
-	addMessageToChatWindow("{FFAA00}(" . coords[1] . " | " . coords[2] . " | " . coords[3] . "){FFFF00}, das liegt in {FFAA00}" . position . "{FFFF00}.") ;
-	
-	; Abstand im Chat erzeugen
-	addMessageToChatWindow(" ")
-	
-	; Weiterhin kannst du ganz privat im lokalen Chatfenster schreiben,
-	addMessageToChatWindow("{FFFF00}Weiterhin kannst du ganz privat im lokalen Chatfenster schreiben,")
-	
-	; Nachricht senden
-	sendChatMessage("mit anderen Chatten")
-	
-	; Befehl senden
-	sendChatMessage("/b und Befehle ausführen.")
-	
-	; HP und Rüstung anzeigen
-	showGameText("~r~Health: ~g~" . getPlayerHealth() . "~w~~n~~r~Armor: ~g~" . getPlayerArmor() . "~w~", 10000, 4)
+if ( isInChat() )
 	return
+addMessageToChatWindow("{FFFFFF}Name: {FF0000}" getUsername())
+addMessageToChatWindow("{FFFFFF}HP: {FF0000}" getPlayerHealth() "{FFFFFF}, ARMOR: {FF0000}" getPlayerArmor())
+pos := getCoordinates()
+addMessageToChatWindow("{FFFFFF}Zone: {FF0000}" calculateZone(pos[1],pos[2],pos[3]) "{FFFFFF}, Stadt: {FF0000}" calculateCity(pos[1],pos[2],pos[3]))
+sendChatMessage("blub")
+sendChatMessage("/asd")
+showGameText("test", 2000, 5)
+return

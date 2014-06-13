@@ -1411,7 +1411,8 @@ readString(hProcess, dwAddress, dwLen) {
 	}
 	
 	ErrorLevel := ERROR_OK
-	return __ansiToUnicode(sRead)
+	;return __ansiToUnicode(sRead)
+	return sRead
 }
 
 readFloat(hProcess, dwAddress) {
@@ -1509,7 +1510,8 @@ writeString(hProcess, dwAddress, wString) {
 		return false
 	}
 	
-	sString := __unicodeToAnsi(wString)
+	;sString := __unicodeToAnsi(wString)
+	sString := wString
 	
 	dwRet := DllCall(	"WriteProcessMemory"
 						, "UInt", hProcess

@@ -80,3 +80,8 @@ sendChatMessage("blub")
 sendChatMessage("/asd")
 showGameText("test", 2000, 5)
 return
+
+;Zeigt eine Dialog-Box an
+Numpad6::
+showDialog(0, "Titel", "some text...", "OK" )
+return

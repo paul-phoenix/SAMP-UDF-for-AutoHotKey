@@ -1,6 +1,6 @@
 ﻿SAMP UDF für AutoHotKey
 =======================
-Version R7.1
+Version R7.2
 ----------
 Diese Sammlung von Funktionen ermöglicht es, auf GTA bzw. SAMP zuzugreifen, um so den Chat zu manipulieren oder Daten auszulesen.
 

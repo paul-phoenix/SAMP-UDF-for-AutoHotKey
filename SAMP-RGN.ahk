@@ -1,4 +1,4 @@
-﻿; #### SAMP UDF R7.1 ####
+﻿; #### SAMP UDF R7.2 ####
 ; SAMP Version: 0.3z R1
 ; Creator: FrozenBrain
 ; https://github.com/FrozenBrain/
@@ -47,6 +47,7 @@ global FUNC_SAMP_ADDTOCHATWND		:= 0x7AA00
 global FUNC_SAMP_SHOWGAMETEXT		:= 0x643B0
 global FUNC_SAMP_PLAYAUDIOSTR		:= 0x79300
 global FUNC_SAMP_STOPAUDIOSTR		:= 0x78F00
+global FUNC_SAMP_SHOWDIALOG			:= 0x816F0
 
 ; Größen
 global SIZE_SAMP_CHATMSG			:= 0xFC
@@ -80,6 +81,7 @@ global bInitZaC						:= 0
 ; # 	- getPlayerNameById(dwId)					Zeigt den Namen zu der Id										#
 ; # 	- getPlayerIdByName(wName)					Zeigt die Id zu dem Namen										#
 ; # 	- updateScoreboardData()					Aktualisiert Scoreboard Inhalte									#
+; # 	- showDialog(...)							Zeigt eine Dialog-Box an										#
 ; ###################################################################################################################
 ; # Spielerfunktionen:																								#
 ; # 	- getPlayerHealth()							Ermittelt die HP des Spielers									#
@@ -283,6 +285,69 @@ unPatchRadio()
 	return true
 }
 
+showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
+	if(!checkHandles())
+		return false
+	
+	
+	dwFunc := dwSAMP + FUNC_SAMP_SHOWDIALOG
+	
+	dwAddress := readDWORD(hGTA, dwSAMP + 0x212A40)
+	if(ErrorLevel || dwAddress==0) {
+		ErrorLevel := ERROR_READ_MEMORY
+		return false
+	}
+	
+	writeString(hGTA, pParam1, wCaption)
+	if(ErrorLevel)
+		return false
+	writeString(hGTA, pParam2, wInfo)
+	if(ErrorLevel)
+		return false
+	writeString(hGTA, pParam3, wButton1)
+	if(ErrorLevel)
+		return false
+	
+	;mov + 7*push + call + retn
+	dwLen := 5 + 7*5 + 5 + 1
+	
+	
+	VarSetCapacity(injectData, dwLen, 0)
+	
+	NumPut(0xB9, injectData, 0, "UChar")		;0 + 1		;mov ecx
+	NumPut(dwAddress, injectData, 1, "UInt")	;1 + 4
+	NumPut(0x68, injectData, 5, "UChar")		;5 + 1		;push 0
+	NumPut(0, injectData, 6, "UInt")			;6 + 4
+	NumPut(0x68, injectData, 10, "UChar")		;10 + 1		;push 0
+	NumPut(pParam1+StrLen(wCaption), injectData, 11, "UInt")			;11 + 4
+	NumPut(0x68, injectData, 15, "UChar")		;15 + 1		;push button1
+	NumPut(pParam3, injectData, 16, "UInt")		;16 + 4
+	NumPut(0x68, injectData, 20, "UChar")		;20 + 1		;push info
+	NumPut(pParam2, injectData, 21, "UInt")		;21 + 4
+	NumPut(0x68, injectData, 25, "UChar")		;25 + 1		;push caption
+	NumPut(pParam1, injectData, 26, "UInt")		;26 + 4
+	NumPut(0x68, injectData, 30, "UChar")		;30 + 1		;push style
+	NumPut(dwStyle, injectData, 31, "UInt")		;31 + 4
+	NumPut(0x68, injectData, 35, "UChar")		;35 + 1		;push 1
+	NumPut(1, injectData, 36, "UInt")			;36 + 4
+	
+	NumPut(0xE8, injectData, 40, "UChar")		;40 + 1 	;call
+	offset := dwFunc - (pInjectFunc + 45)
+	NumPut(offset, injectData, 41, "Int")		;41 + 4
+	NumPut(0xC3, injectData, 45, "UChar")		;45 + 1		;retn
+	
+	writeRaw(hGTA, pInjectFunc, &injectData, dwLen)
+	if(ErrorLevel)
+		return false
+	
+	hThread := createRemoteThread(hGTA, 0, 0, pInjectFunc, 0, 0, 0)
+	if(ErrorLevel)
+		return false
+	
+	waitForSingleObject(hThread, 0xFFFFFFFF)
+	
+	return true
+}
 
 updateScoreboardData() {
 	

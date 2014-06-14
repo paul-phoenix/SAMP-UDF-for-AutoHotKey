@@ -160,7 +160,7 @@ getUsername() {
         return "Unbekannt"
     
     dwAddress := dwSAMP + ADDR_SAMP_USERNAME
-    sUsername := readString(hGTA, dwAddress, 20)
+    sUsername := readString(hGTA, dwAddress, 25)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
         return "Unbekannt"
@@ -391,7 +391,7 @@ getPlayerIdByName(wName) {
     if(!checkHandles())
         return -1
         
-    if(StrLen(wName) < 3 || StrLen(wName) > 24)
+    if(StrLen(wName) < 1 || StrLen(wName) > 24)
         return -1
     
     dwAddress := readDWORD(hGTA, dwSAMP + 0x212A80)            ;g_SAMP
@@ -427,7 +427,7 @@ getPlayerIdByName(wName) {
             ErrorLevel := ERROR_READ_MEMORY
             return -1
         }
-        if(sUsername == wName) {
+        if(InStr(sUsername,wName)==1) {
             ;wTemp := readWORD(hGTA, dwPlayers + 4)    ;localPlayerID
             wTemp := readMem(hGTA, dwPlayers + 4, 2, "Short")    ;localPlayerID
             if(ErrorLevel) {
@@ -450,7 +450,7 @@ getPlayerIdByName(wName) {
             ErrorLevel := ERROR_READ_MEMORY
             return -1
         }
-        if(sUsername == wName) {
+        if(InStr(sUsername,wName)==1) {
             ;wTemp := readWORD(hGTA, dwPlayers + 4)    ;localPlayerID
             wTemp := readMem(hGTA, dwPlayers + 4, 2, "Short")    ;localPlayerID
             if(ErrorLevel) {
@@ -488,7 +488,7 @@ getPlayerIdByName(wName) {
                 ErrorLevel := ERROR_READ_MEMORY
                 return -1
             }
-            if(sUsername == wName) {
+            if(InStr(sUsername,wName)==1) {
                 ErrorLevel := ERROR_OK
                 return i
             }
@@ -504,7 +504,7 @@ getPlayerIdByName(wName) {
                 ErrorLevel := ERROR_READ_MEMORY
                 return -1
             }
-            if(sUsername == wName) {
+            if(InStr(sUsername,wName)==1) {
                 ErrorLevel := ERROR_OK
                 return i
             }

@@ -81,8 +81,8 @@ global bInitZaC                        := 0
 ; #     - getPlayerNameById(dwId)                   Zeigt den Namen zu der Id                                         #
 ; #     - getPlayerIdByName(wName)                  Zeigt die Id zu dem Namen                                         #
 ; #     - updateScoreboardData()                    Aktualisiert Scoreboard Inhalte                                   #
-; #     - showDialog(dwStyle, wCaption,                                                                               #
-; #                   wInfo, wButton1)              Zeigt eine Dialog-Box an                                          #
+; #     - showDialog(dwStyle, wCaption,             Zeigt eine Dialog-Box an                                          #
+; #                   wInfo, wButton1)                                                                                #
 ; #####################################################################################################################
 ; # Spielerfunktionen:                                                                                                #
 ; #     - getPlayerHealth()                         Ermittelt die HP des Spielers                                     #
@@ -1215,7 +1215,6 @@ initZonesAndCities() {
 }
 
 calculateZone(posX, posY, posZ) {
-    global
     
     if ( bInitZaC == 0 )
     {
@@ -1223,9 +1222,9 @@ calculateZone(posX, posY, posZ) {
         bInitZaC := 1
     }
         
-    Loop % nZone
+    Loop % nZone-1
     {
-        if (posX >= zone%A_Index%_x1) and (posY >= zone%A_Index%_y1) and (posZ >= zone%A_Index%_z1) and (posX <= zone%A_Index%_x2) and (posY <= zone%A_Index%_y2) and (posZ <= zone%A_Index%_z2)
+        if (posX >= zone%A_Index%_x1) && (posY >= zone%A_Index%_y1) && (posZ >= zone%A_Index%_z1) && (posX <= zone%A_Index%_x2) && (posY <= zone%A_Index%_y2) && (posZ <= zone%A_Index%_z2)
         {
             ErrorLevel := ERROR_OK
             return zone%A_Index%_name
@@ -1237,23 +1236,22 @@ calculateZone(posX, posY, posZ) {
 }
 
 calculateCity(posX, posY, posZ) {
-    global
     
     if ( bInitZaC == 0 )
     {
         initZonesAndCities()
         bInitZaC := 1
     }
-    local smallestCity = "Unbekannt"
-    local currentCitySize = 0
-    local smallestCitySize
+    smallestCity := "Unbekannt"
+    currentCitySize := 0
+    smallestCitySize := 0
     
-    Loop % nCity
+    Loop % nCity-1
     {
-        if (posX >= city%A_Index%_x1) and (posY >= city%A_Index%_y1) and (posZ >= city%A_Index%_z1) and (posX <= city%A_Index%_x2) and (posY <= city%A_Index%_y2) and (posZ <= city%A_Index%_z2)
+        if (posX >= city%A_Index%_x1) && (posY >= city%A_Index%_y1) && (posZ >= city%A_Index%_z1) && (posX <= city%A_Index%_x2) && (posY <= city%A_Index%_y2) && (posZ <= city%A_Index%_z2)
         {
-            currentCitySize = ((city%A_Index%_x2 - city%A_Index%_x1) * (city%A_Index%_y2 - city%A_Index%_y1) * (city%A_Index%_z2 - city%A_Index%_z1))
-            if (smallestCity == "Unbekannt") or (currentCitySize < smallestCitySize)
+            currentCitySize := ((city%A_Index%_x2 - city%A_Index%_x1) * (city%A_Index%_y2 - city%A_Index%_y1) * (city%A_Index%_z2 - city%A_Index%_z1))
+            if (smallestCity == "Unbekannt") || (currentCitySize < smallestCitySize)
             {
                 smallestCity := city%A_Index%_name
                 smallestCitySize := currentCitySize
@@ -1269,12 +1267,15 @@ calculateCity(posX, posY, posZ) {
     return smallestCity
 }
 
+/*
+;do not work?
 getCurrentZonecode() {
     if(!checkHandles())
         return ""
     
     return readString(hGTA, ADDR_ZONECODE, 5)
 }
+*/
 
 AddZone(sName, x1, y1, z1, x2, y2, z2) {
     global

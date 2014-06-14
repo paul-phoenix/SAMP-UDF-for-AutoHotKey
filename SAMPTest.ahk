@@ -1,6 +1,6 @@
 ﻿SendMode Input
 SetWorkingDir %A_ScriptDir%
-;#Warn
+#Warn
 #UseHook
 #NoEnv
 #SingleInstance force

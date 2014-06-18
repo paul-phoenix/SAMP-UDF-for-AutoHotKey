@@ -1478,7 +1478,9 @@ readString(hProcess, dwAddress, dwLen) {
     }
     
     ErrorLevel := ERROR_OK
-    return __ansiToUnicode(sRead)
+    if A_IsUnicode
+        return __ansiToUnicode(sRead)
+    return sRead
 }
 
 readFloat(hProcess, dwAddress) {
@@ -1576,7 +1578,9 @@ writeString(hProcess, dwAddress, wString) {
         return false
     }
     
-    sString := __unicodeToAnsi(wString)
+    sString := wString
+    if A_IsUnicode
+        sString := __unicodeToAnsi(wString)
     
     dwRet := DllCall(    "WriteProcessMemory"
                         , "UInt", hProcess
@@ -1822,47 +1826,4 @@ __unicodeToAnsi(wString, nLen = 0) {
       , "Uint", 0
       , "Uint", 0)
     return sString
-}
-
-__toHex(dwIn, dwNewLen = 8) {
-    oldFormat := A_FormatInteger
-    if(dwIn >= 0) {
-        hexOut := dwIn
-    } else {
-        hexOut := 0xFFFFFFFF + dwIn + 0x1
-    }
-    SetFormat, Integer, H
-    hexOut += 0
-    hexOut := SubStr(hexOut, 3)
-    SetFormat, Integer, %oldFormat%
-    
-    while(StrLen(hexOut) < dwNewLen) {
-        hexOut := "0" . hexOut
-    }
-    
-    if(StrLen(hexOut) > dwNewLen)
-        hexOut := SubStr(hexOut, -dwNewLen + 1)
-    
-    return "0x" . hexOut
-}
-
-__toLittleEndian(hexIn) {
-    hexIn := SubStr(hexIn, 3)
-    dwInLen := StrLen(hexIn)
-    hexOut := ""
-    
-    if(Mod(dwInLen, 2) > 0) {
-        hexIn := "0" . hexIn
-        dwInLen += 1
-    }
-    
-    nBytes := (dwInLen / 2)
-    
-    i := 0
-    while(i < nBytes) {
-        hexOut := hexOut . SubStr(hexIn, -(i*2)-1, 2)
-        i += 1
-    }
-    
-    return "0x" . hexOut
 }

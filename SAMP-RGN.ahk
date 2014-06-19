@@ -1,4 +1,4 @@
-﻿; #### SAMP UDF R7.2 ####
+﻿; #### SAMP UDF R9 ####
 ; SAMP Version: 0.3z R1
 ; Creator: FrozenBrain
 ; https://github.com/FrozenBrain/
@@ -41,6 +41,7 @@ global ADDR_SAMP_INCHAT_PTR            := 0x212A94
 global ADDR_SAMP_INCHAT_PTR_OFF        := 0x55
 global ADDR_SAMP_USERNAME              := 0x2123F7
 global ADDR_SAMP_CHATMSG_PTR           := 0x212A6C
+global ADDR_SAMP_SHOWDLG_PTR           := 0x212A40
 global FUNC_SAMP_SENDCMD               := 0x7BDD0
 global FUNC_SAMP_SENDSAY               := 0x4CA0
 global FUNC_SAMP_ADDTOCHATWND          := 0x7AA00
@@ -48,6 +49,23 @@ global FUNC_SAMP_SHOWGAMETEXT          := 0x643B0
 global FUNC_SAMP_PLAYAUDIOSTR          := 0x79300
 global FUNC_SAMP_STOPAUDIOSTR          := 0x78F00
 global FUNC_SAMP_SHOWDIALOG            := 0x816F0
+global FUNC_UPDATESCOREBOARD           := 0x7D10
+
+global SAMP_INFO_OFFSET                     := 0x212A80
+global SAMP_PPOOLS_OFFSET                   := 0x3D9
+global SAMP_PPOOL_PLAYER_OFFSET             := 0x14
+global SAMP_SLOCALPLAYERID_OFFSET           := 0x4
+global SAMP_ISTRLEN_LOCALPLAYERNAME_OFFSET  := 0x1A
+global SAMP_SZLOCALPLAYERNAME_OFFSET        := 0xA
+global SAMP_PSZLOCALPLAYERNAME_OFFSET       := 0xA
+global SAMP_PREMOTEPLAYER_OFFSET            := 0x2E
+global SAMP_ISTRLENNAME___OFFSET            := 0x24
+global SAMP_SZPLAYERNAME_OFFSET             := 0x14
+global SAMP_PSZPLAYERNAME_OFFSET            := 0x14
+global SAMP_ILOCALPLAYERPING_OFFSET         := 0x26
+global SAMP_ILOCALPLAYERSCORE_OFFSET        := 0x2A
+global SAMP_IPING_OFFSET                    := 0xC
+global SAMP_ISCORE_OFFSET                   := 0x4
 
 ; Größen
 global SIZE_SAMP_CHATMSG               := 0xFC
@@ -64,6 +82,8 @@ global pInjectFunc                     := 0x0
 global nZone                           := 1
 global nCity                           := 1
 global bInitZaC                        := 0
+global iRefreshScoreboard              := 0
+global oScoreboardData                 := ""
 
 ; #####################################################################################################################
 ; # SAMP-Funktionen:                                                                                                  #
@@ -80,7 +100,8 @@ global bInitZaC                        := 0
 ; #     - getPlayerPingById(dwId)                   Zeigt den Ping zu der Id                                          #
 ; #     - getPlayerNameById(dwId)                   Zeigt den Namen zu der Id                                         #
 ; #     - getPlayerIdByName(wName)                  Zeigt die Id zu dem Namen                                         #
-; #     - updateScoreboardData()                    Aktualisiert Scoreboard Inhalte                                   #
+; #     - updateScoreboardDataEx()                  Aktualisiert Scoreboard Inhalte (wird implizit aufgerufen)        #
+; #     - updateOScoreboardData()                   Aktualisiert Scoreboard Inhalte (wird implizit aufgerufen)        #
 ; #     - showDialog(dwStyle, wCaption,             Zeigt eine Dialog-Box an                                          #
 ; #                   wInfo, wButton1)                                                                                #
 ; #####################################################################################################################
@@ -293,7 +314,7 @@ showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
     
     dwFunc := dwSAMP + FUNC_SAMP_SHOWDIALOG
     
-    dwAddress := readDWORD(hGTA, dwSAMP + 0x212A40)
+    dwAddress := readDWORD(hGTA, dwSAMP + ADDR_SAMP_SHOWDLG_PTR)
     if(ErrorLevel || dwAddress==0) {
         ErrorLevel := ERROR_READ_MEMORY
         return false
@@ -350,18 +371,18 @@ showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
     return true
 }
 
-updateScoreboardData() {
+updateScoreboardDataEx() {
     
     if(!checkHandles())
         return false
     
-    dwAddress := readDWORD(hGTA, dwSAMP + 0x212A80)            ;g_SAMP
+    dwAddress := readDWORD(hGTA, dwSAMP + SAMP_INFO_OFFSET)            ;g_SAMP
     if(ErrorLevel || dwAddress==0) {
         ErrorLevel := ERROR_READ_MEMORY
         return false
     }
     
-    dwFunc := dwSAMP + 0x7D10
+    dwFunc := dwSAMP + FUNC_UPDATESCOREBOARD
     
     VarSetCapacity(injectData, 11, 0) ;mov + call + retn
     
@@ -387,349 +408,235 @@ updateScoreboardData() {
     
 }
 
-getPlayerIdByName(wName) {
+updateOScoreboardData() {
     if(!checkHandles())
-        return -1
-        
-    if(StrLen(wName) < 1 || StrLen(wName) > 24)
-        return -1
+        return 0
     
-    dwAddress := readDWORD(hGTA, dwSAMP + 0x212A80)            ;g_SAMP
+    oScoreboardData := []
+    iRefreshScoreboard := A_TickCount
+    
+    updateScoreboardDataEx()
+    
+    dwAddress := readDWORD(hGTA, dwSAMP + SAMP_INFO_OFFSET)
     if(ErrorLevel || dwAddress==0) {
         ErrorLevel := ERROR_READ_MEMORY
-        return -1
+        return 0
     }
     
-    dwAddress := readDWORD(hGTA, dwAddress + 0x3d9)        ;pPools
+    dwAddress := readDWORD(hGTA, dwAddress + SAMP_PPOOLS_OFFSET)
     if(ErrorLevel || dwAddress==0) {
         ErrorLevel := ERROR_READ_MEMORY
-        return -1
+        return 0
     }
     
-    dwPlayers := readDWORD(hGTA, dwAddress + 0x14)             ;g_Players
+    dwPlayers := readDWORD(hGTA, dwAddress + SAMP_PPOOL_PLAYER_OFFSET)
     if(ErrorLevel || dwPlayers==0) {
         ErrorLevel := ERROR_READ_MEMORY
-        return -1
+        return 0
     }
     
-    ;----------------
-    
-    
-    dwTemp := readDWORD(hGTA, dwPlayers + 26)    ;local player strlen
+    wID := readMem(hGTA, dwPlayers + SAMP_SLOCALPLAYERID_OFFSET, 2, "Short")    ;sLocalPlayerID
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return -1
+        return 0
     }
     
+    dwPing := readMem(hGTA, dwPlayers + SAMP_ILOCALPLAYERPING_OFFSET, 4, "Int")
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    dwScore := readMem(hGTA, dwPlayers + SAMP_ILOCALPLAYERSCORE_OFFSET, 4, "Int")
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    dwTemp := readMem(hGTA, dwPlayers + SAMP_ISTRLEN_LOCALPLAYERNAME_OFFSET, 4, "Int")    ;iStrlen_LocalPlayerName
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    sUsername := ""
     if(dwTemp <= 0xf) {
-        sUsername := readString(hGTA, dwPlayers + 10, 16)
+        sUsername := readString(hGTA, dwPlayers + SAMP_SZLOCALPLAYERNAME_OFFSET, 16)       ;szLocalPlayerName
         if(ErrorLevel) {
             ErrorLevel := ERROR_READ_MEMORY
-            return -1
-        }
-        if(InStr(sUsername,wName)==1) {
-            ;wTemp := readWORD(hGTA, dwPlayers + 4)    ;localPlayerID
-            wTemp := readMem(hGTA, dwPlayers + 4, 2, "Short")    ;localPlayerID
-            if(ErrorLevel) {
-                ErrorLevel := ERROR_READ_MEMORY
-                return -1
-            }
-            ErrorLevel := ERROR_OK
-            return wTemp
+            return 0
         }
     }
     else {
-    
-        dwAddress := readDWORD(hGTA, dwPlayers + 10)
+        dwAddress := readDWORD(hGTA, dwPlayers + SAMP_PSZLOCALPLAYERNAME_OFFSET)        ;pszLocalPlayerName
         if(ErrorLevel) {
             ErrorLevel := ERROR_READ_MEMORY
-            return -1
+            return 0
         }
         sUsername := readString(hGTA, dwAddress, 25)
         if(ErrorLevel) {
             ErrorLevel := ERROR_READ_MEMORY
-            return -1
-        }
-        if(InStr(sUsername,wName)==1) {
-            ;wTemp := readWORD(hGTA, dwPlayers + 4)    ;localPlayerID
-            wTemp := readMem(hGTA, dwPlayers + 4, 2, "Short")    ;localPlayerID
-            if(ErrorLevel) {
-                ErrorLevel := ERROR_READ_MEMORY
-                return -1
-            }
-            ErrorLevel := ERROR_OK
-            return wTemp
+            return 0
         }
     }
+    oScoreboardData.Insert( Object("NAME", sUsername, "ID", wID, "PING", dwPing, "SCORE", dwScore) )
     
-    ;-----
-        
     Loop, 1004
     {
         i := A_Index-1
         
-        dwRemoteplayer := readDWORD(hGTA, dwPlayers+0x2e+i*4)      ;pRemoteplayer
+        dwRemoteplayer := readDWORD(hGTA, dwPlayers+SAMP_PREMOTEPLAYER_OFFSET+i*4)      ;pRemotePlayer
         if(ErrorLevel) {
             ErrorLevel := ERROR_READ_MEMORY
-            return -1
+            return 0
         }
+        
         if(dwRemoteplayer==0)
             continue
-            
-        dwTemp := readDWORD(hGTA, dwRemoteplayer + 36)        ;iStrlenName__
+        
+        dwPing := readMem(hGTA, dwRemoteplayer + SAMP_IPING_OFFSET, 4, "Int")
         if(ErrorLevel) {
             ErrorLevel := ERROR_READ_MEMORY
-            return -1
+            return 0
         }
+        
+        dwScore := readMem(hGTA, dwRemoteplayer + SAMP_ISCORE_OFFSET, 4, "Int")
+        if(ErrorLevel) {
+            ErrorLevel := ERROR_READ_MEMORY
+            return 0
+        }
+        
+        dwTemp := readMem(hGTA, dwRemoteplayer + SAMP_ISTRLENNAME___OFFSET, 4, "Int")
+        if(ErrorLevel) {
+            ErrorLevel := ERROR_READ_MEMORY
+            return 0
+        }
+        sUsername := ""
         if(dwTemp <= 0xf)
         {
-            sUsername := readString(hGTA, dwRemoteplayer+0x14, 16)
+            sUsername := readString(hGTA, dwRemoteplayer+SAMP_SZPLAYERNAME_OFFSET, 16)
             if(ErrorLevel) {
                 ErrorLevel := ERROR_READ_MEMORY
-                return -1
-            }
-            if(InStr(sUsername,wName)==1) {
-                ErrorLevel := ERROR_OK
-                return i
+                return 0
             }
         }
         else {
-            dwAddress := readDWORD(hGTA, dwRemoteplayer + 0x14)
+            dwAddress := readDWORD(hGTA, dwRemoteplayer + SAMP_PSZPLAYERNAME_OFFSET)
             if(ErrorLevel || dwAddress==0) {
                 ErrorLevel := ERROR_READ_MEMORY
-                return -1
+                return 0
             }
             sUsername := readString(hGTA, dwAddress, 25)
             if(ErrorLevel) {
                 ErrorLevel := ERROR_READ_MEMORY
-                return -1
+                return 0
             }
-            if(InStr(sUsername,wName)==1) {
-                ErrorLevel := ERROR_OK
-                return i
-            }
+            
         }
+        oScoreboardData.Insert( Object("NAME", sUsername, "ID", i, "PING", dwPing, "SCORE", dwScore) )
+    }
+    ErrorLevel := ERROR_OK
+    return 1
+}
+
+getPlayerIdByName(wName) {
+    if(StrLen(wName) < 1 || StrLen(wName) > 24)
+        return -1
+    
+    if(iRefreshScoreboard+1000 > A_TickCount)
+    {
+        Loop % oScoreboardData.MaxIndex()
+        {
+            if(InStr(oScoreboardData[A_Index].NAME,wName)==1)
+                return oScoreboardData[A_Index].ID
+        }
+        return -1
     }
     
+    if(!updateOScoreboardData())
+        return -1
     
-    ;----------------
-    ErrorLevel := ERROR_OK
+    Loop % oScoreboardData.MaxIndex()
+    {
+        if(InStr(oScoreboardData[A_Index].NAME,wName)==1)
+            return oScoreboardData[A_Index].ID
+    }
     return -1
 }
 
 getPlayerNameById(dwId) {
-    if(!checkHandles())
-        return ""
-        
     if(dwId < 0 || dwId > 1004)
         return ""
     
-    dwAddress := readDWORD(hGTA, dwSAMP + 0x212A80)            ;g_SAMP
-    if(ErrorLevel || dwAddress==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    
-    dwAddress := readDWORD(hGTA, dwAddress + 0x3d9)        ;pPools
-    if(ErrorLevel || dwAddress==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    
-    dwPlayers := readDWORD(hGTA, dwAddress + 0x14)             ;g_Players
-    if(ErrorLevel || dwPlayers==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    
-    ;wTemp := readWORD(hGTA, dwPlayers + 4)    ;localPlayerID
-    wTemp := readMem(hGTA, dwPlayers + 4, 2, "Short")    ;localPlayerID
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    if(wTemp == dwId) {
-        dwTemp2 := readDWORD(hGTA, dwPlayers + 26)
-        if(ErrorLevel) {
-            ErrorLevel := ERROR_READ_MEMORY
-            return ""
-        }
-        if(dwTemp2 <= 0xf) {
-            sUsername := readString(hGTA, dwPlayers + 10, 16)
-            if(ErrorLevel) {
-                ErrorLevel := ERROR_READ_MEMORY
-                return ""
-            }
-            ErrorLevel := ERROR_OK
-            return sUsername
-        }
-        dwAddress := readDWORD(hGTA, dwPlayers + 10)
-        if(ErrorLevel) {
-            ErrorLevel := ERROR_READ_MEMORY
-            return ""
-        }
-        sUsername := readString(hGTA, dwAddress, 25)
-        if(ErrorLevel) {
-            ErrorLevel := ERROR_READ_MEMORY
-            return ""
-        }
-        ErrorLevel := ERROR_OK
-        return sUsername
-    }
-    
-    dwRemoteplayer := readDWORD(hGTA, dwPlayers+0x2e+dwId*4)      ;pRemoteplayer
-    if(ErrorLevel || dwRemoteplayer==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    
-    dwTemp := readDWORD(hGTA, dwRemoteplayer + 36)        ;iStrlenName__
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    if(dwTemp <= 0xf)
+    if(iRefreshScoreboard+1000 > A_TickCount)
     {
-        sUsername := readString(hGTA, dwRemoteplayer+0x14, 16)
-        if(ErrorLevel) {
-            ErrorLevel := ERROR_READ_MEMORY
-            return ""
+        Loop % oScoreboardData.MaxIndex()
+        {
+            if(oScoreboardData[A_Index].ID==dwId)
+                return oScoreboardData[A_Index].NAME
         }
-        ErrorLevel := ERROR_OK
-        return sUsername
-    }
-    
-    dwAddress := readDWORD(hGTA, dwRemoteplayer + 0x14)
-    if(ErrorLevel || dwAddress==0) {
-        ErrorLevel := ERROR_READ_MEMORY
         return ""
     }
     
-    sUsername := readString(hGTA, dwAddress, 25)
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
+    if(!updateOScoreboardData())
         return ""
+    
+    Loop % oScoreboardData.MaxIndex()
+    {
+        if(oScoreboardData[A_Index].ID==dwId)
+            return oScoreboardData[A_Index].NAME
     }
-    ErrorLevel := ERROR_OK
-    return sUsername
+    return ""
 }
 
 getPlayerPingById(dwId) {
-    if(!checkHandles())
-        return -1
-        
     if(dwId < 0 || dwId > 1004)
         return -1
-    
-    dwAddress := readDWORD(hGTA, dwSAMP + 0x212A80)            ;g_SAMP
-    if(ErrorLevel || dwAddress==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return -1
-    }
-    
-    dwAddress := readDWORD(hGTA, dwAddress + 0x3d9)        ;pPools
-    if(ErrorLevel || dwAddress==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return -1
-    }
-    
-    dwPlayers := readDWORD(hGTA, dwAddress + 0x14)             ;g_Players
-    if(ErrorLevel || dwPlayers==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return -1
-    }
-    
-    ;wTemp := readWORD(hGTA, dwPlayers + 4)    ;localPlayerID
-    wTemp := readMem(hGTA, dwPlayers + 4, 2, "Short")    ;localPlayerID
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return -1
-    }
-    
-    if(wTemp == dwId) {
-        ;dwTemp := readDWORD(hGTA, dwPlayers + 0x26)
-        dwTemp := readMem(hGTA, dwPlayers + 0x26, 4, "Int")
-        if(ErrorLevel) {
-            ErrorLevel := ERROR_READ_MEMORY
-            return -1
+        
+    if(iRefreshScoreboard+1000 > A_TickCount)
+    {
+        Loop % oScoreboardData.MaxIndex()
+        {
+            if(oScoreboardData[A_Index].ID==dwId)
+                return oScoreboardData[A_Index].PING
         }
-        ErrorLevel := ERROR_OK
-        return dwTemp
-    }
-    
-    dwRemoteplayer := readDWORD(hGTA, dwPlayers+0x2e+dwId*4)      ;pRemoteplayer
-    if(ErrorLevel || dwRemoteplayer==0) {
-        ErrorLevel := ERROR_READ_MEMORY
         return -1
     }
     
-    ;dwTemp := readDWORD(hGTA, dwRemoteplayer + 12)
-    dwTemp := readMem(hGTA, dwRemoteplayer + 12, 4, "Int")
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
+    if(!updateOScoreboardData())
         return -1
+    
+    Loop % oScoreboardData.MaxIndex()
+    {
+        if(oScoreboardData[A_Index].ID==dwId)
+            return oScoreboardData[A_Index].PING
     }
-    ErrorLevel := ERROR_OK
-    return dwTemp
+    return -1
 }
 
 getPlayerScoreById(dwId) {
-    if(!checkHandles())
-        return ""
-        
     if(dwId < 0 || dwId > 1004)
         return ""
     
-    dwAddress := readDWORD(hGTA, dwSAMP + 0x212A80)            ;g_SAMP
-    if(ErrorLevel || dwAddress==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    
-    dwAddress := readDWORD(hGTA, dwAddress + 0x3d9)        ;pPools
-    if(ErrorLevel || dwAddress==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    
-    dwPlayers := readDWORD(hGTA, dwAddress + 0x14)             ;g_Players
-    if(ErrorLevel || dwPlayers==0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    
-    ;wTemp := readWORD(hGTA, dwPlayers + 4)    ;localPlayerID
-    wTemp := readMem(hGTA, dwPlayers + 4, 2, "Short")    ;localPlayerID
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return ""
-    }
-    
-    if(wTemp == dwId) {
-        ;dwTemp := readDWORD(hGTA, dwPlayers + 0x2a)
-        dwTemp := readMem(hGTA, dwPlayers + 0x2a, 4, "Int")
-        if(ErrorLevel) {
-            ErrorLevel := ERROR_READ_MEMORY
-            return ""
+    if(iRefreshScoreboard+1000 > A_TickCount)
+    {
+        Loop % oScoreboardData.MaxIndex()
+        {
+            if(oScoreboardData[A_Index].ID==dwId)
+                return oScoreboardData[A_Index].SCORE
         }
-        ErrorLevel := ERROR_OK
-        return dwTemp
-    }
-    
-    dwRemoteplayer := readDWORD(hGTA, dwPlayers+0x2e+dwId*4)      ;pRemoteplayer
-    if(ErrorLevel || dwRemoteplayer==0) {
-        ErrorLevel := ERROR_READ_MEMORY
         return ""
     }
     
-    ;dwTemp := readDWORD(hGTA, dwRemoteplayer + 4)
-    dwTemp := readMem(hGTA, dwRemoteplayer + 4, 4, "Int")
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
+    if(!updateOScoreboardData())
         return ""
+    
+    Loop % oScoreboardData.MaxIndex()
+    {
+        if(oScoreboardData[A_Index].ID==dwId)
+            return oScoreboardData[A_Index].SCORE
     }
-    ErrorLevel := ERROR_OK
-    return dwTemp
+    return ""
 }
 
 ; ##### Spielerfunktionen #####

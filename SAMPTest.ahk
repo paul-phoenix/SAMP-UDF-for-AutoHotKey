@@ -42,9 +42,12 @@ return
 ;Gebt einen Spielernamen ein, um weitere Infos über diesen Spieler zu bekommen
 Numpad1::
 SendInput tName:{Space}
+Suspend On
+Hotkey, Enter, On
+Hotkey, Escape, On
 Input varName, V I M,{enter}
 SendInput {end}+{home}{Del}{esc}
-updateScoreboardData()
+;updateScoreboardData()     ;wird nun implizit aufgerufen
 varID := getPlayerIdByName(varName)
 showGameText(getPlayerNameById(varID) "~n~Score: " getPlayerScoreById(varID) "~n~Ping: " getPlayerPingById(varID), 2000, 5)
 return
@@ -52,9 +55,12 @@ return
 ;Gebt eine ID ein, um weitere Infos über diesen Spieler zu bekommen
 Numpad2::
 SendInput tID:{Space}
+Suspend On
+Hotkey, Enter, On
+Hotkey, Escape, On
 Input varID, V I M,{enter}
 SendInput {end}+{home}{Del}{esc}
-updateScoreboardData()
+;updateScoreboardData()     ;wird nun implizit aufgerufen
 showGameText(getPlayerNameById(varID) "~n~Score: " getPlayerScoreById(varID) "~n~Ping: " getPlayerPingById(varID), 2000, 5)
 return
 

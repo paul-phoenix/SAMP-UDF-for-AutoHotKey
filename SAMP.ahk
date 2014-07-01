@@ -368,6 +368,8 @@ showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
     
     waitForSingleObject(hThread, 0xFFFFFFFF)
     
+    closeProcess(hThread)
+    
     return true
 }
 
@@ -403,6 +405,8 @@ updateScoreboardDataEx() {
         return false
     
     waitForSingleObject(hThread, 0xFFFFFFFF)
+    
+    closeProcess(hThread)
     
     return true
     
@@ -1590,6 +1594,8 @@ callWithParams(hProcess, dwFunc, aParams, bCleanupStack = true) {
         return false
     
     waitForSingleObject(hThread, 0xFFFFFFFF)
+    
+    closeProcess(hThread)
     
     return true
 }

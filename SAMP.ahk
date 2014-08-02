@@ -1224,7 +1224,7 @@ checkHandles() {
 }
 
 refreshGTA() {
-    newPID := getPID("gta_sa.exe")
+    newPID := getPID("GTA:SA:MP")
     if(!newPID) {                            ; GTA nicht gefunden
         if(hGTA) {                            ; Handle offen
             virtualFreeEx(hGTA, pMemory, 0, 0x8000)
@@ -1282,15 +1282,9 @@ refreshMemory() {
 }
 
 ; ##### Speicherfunktionen #####
-getPID(sProcess) {
-    Process, Exist, %sProcess%
-    dwPID = %ErrorLevel%
-    if(dwPID == 0) {
-        ErrorLevel := ERROR_PROCESS_NOT_FOUND
-        return 0
-    }
-    
-    ErrorLevel := ERROR_OK
+getPID(szWindow) {
+    local dwPID := 0
+    WinGet, dwPID, PID, %szWindow%
     return dwPID
 }
 

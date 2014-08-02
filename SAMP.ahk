@@ -110,6 +110,7 @@ global oScoreboardData                 := ""
 ; #     - getPlayerArmor()                          Ermittelt den Rüstungswert des Spielers                           #
 ; #####################################################################################################################
 ; # Fahrzeugfunktionen:                                                                                               #
+; #     - isPlayerInAnyVehicle()                    Ermittelt, ob sich der Spieler in einem Fahrzeug befindet         #
 ; #     - getVehicleHealth()                        Ermittelt die HP des Fahrzeugs, in dem der Spieler sitzt          #
 ; #####################################################################################################################
 ; # Standpunktbestimmung:                                                                                             #
@@ -686,6 +687,20 @@ getPlayerArmor() {
     return Round(fHealth, 2)
 }
 ; ##### Fahrzeugfunktionen #####
+isPlayerInAnyVehicle()
+{
+    if(!checkHandles())
+        return 0
+    
+    dwVehPtr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    return dwVehPtr > 0
+}
+
 getVehicleHealth() {
     if(!checkHandles())
         return 0.0

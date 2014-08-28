@@ -35,6 +35,16 @@ global ADDR_CPED_HPOFF                 := 0x540
 global ADDR_CPED_ARMOROFF              := 0x548
 global ADDR_VEHICLE_PTR                := 0xBA18FC
 global ADDR_VEHICLE_HPOFF              := 0x4C0
+global ADDR_CPED_MONEY                 := 0xB7CE50
+global ADDR_CPED_INTID                 := 0xA4ACE8
+global ADDR_VEHICLE_DOORSTATE          := 0x4F8
+global ADDR_VEHICLE_ENGINESTATE        := 0x428
+global ADDR_VEHICLE_LIGHTSTATE         := 0x428
+global ADDR_VEHICLE_MODEL              := 0x22
+global ADDR_VEHICLE_TYPE               := 0x590
+
+global oAirplaneModels                 := [417, 425, 447, 460, 469, 476, 487, 488, 497, 511, 512, 513, 519, 520, 548, 553, 563, 577, 592, 593]
+global oBikeModels                     := [481,509,510]
 
 ; SAMP Adressen
 global ADDR_SAMP_INCHAT_PTR            := 0x212A94
@@ -84,6 +94,7 @@ global nCity                           := 1
 global bInitZaC                        := 0
 global iRefreshScoreboard              := 0
 global oScoreboardData                 := ""
+global iRefreshHandles                 := 0
 
 ; #####################################################################################################################
 ; # SAMP-Funktionen:                                                                                                  #
@@ -100,10 +111,11 @@ global oScoreboardData                 := ""
 ; #     - getPlayerPingById(dwId)                   Zeigt den Ping zu der Id                                          #
 ; #     - getPlayerNameById(dwId)                   Zeigt den Namen zu der Id                                         #
 ; #     - getPlayerIdByName(wName)                  Zeigt die Id zu dem Namen                                         #
-; #     - updateScoreboardDataEx()                  Aktualisiert Scoreboard Inhalte (wird implizit aufgerufen)        #
-; #     - updateOScoreboardData()                   Aktualisiert Scoreboard Inhalte (wird implizit aufgerufen)        #
 ; #     - showDialog(dwStyle, wCaption,             Zeigt eine Dialog-Box an                                          #
 ; #                   wInfo, wButton1)                                                                                #
+; # ----------------------------------------------------------------------------------------------------------------- #
+; #     - updateScoreboardDataEx()                  Aktualisiert Scoreboard Inhalte (wird implizit aufgerufen)        #
+; #     - updateOScoreboardData()                   Aktualisiert Scoreboard Inhalte (wird implizit aufgerufen)        #
 ; #####################################################################################################################
 ; # Spielerfunktionen:                                                                                                #
 ; #     - getPlayerHealth()                         Ermittelt die HP des Spielers                                     #
@@ -112,23 +124,29 @@ global oScoreboardData                 := ""
 ; # Fahrzeugfunktionen:                                                                                               #
 ; #     - isPlayerInAnyVehicle()                    Ermittelt, ob sich der Spieler in einem Fahrzeug befindet         #
 ; #     - getVehicleHealth()                        Ermittelt die HP des Fahrzeugs, in dem der Spieler sitzt          #
+; #     - getVehicleType()                          (ist selbsterkärend...)                                           #
+; #     - getVehicleModelId()                                                                                         #
+; #     - getVehicleLightState()                                                                                      #
+; #     - getVehicleEngineState()                                                                                     #
+; #     - getVehicleLockState()                                                                                       #
 ; #####################################################################################################################
 ; # Standpunktbestimmung:                                                                                             #
 ; #     - getCoordinates()                          Ermittelt die aktuelle Position (Koordinaten)                     #
 ; # ----------------------------------------------------------------------------------------------------------------- #
-; #     - initZonesAndCities()                      Initialisiert eine Liste aller Standartgebiete                    #
-; #                                                 (Voraussetzung für die folgenden Funktionen dieser Kategorie)     #
 ; #     - calculateZone(X, Y, Z)                    Bestimmt die Zone (= Stadtteil) aus den geg. Koordinaten          #
 ; #     - calculateCity(X, Y, Z)                    Bestimmt die Stadt aus den geg. Koordinaten                       #
 ; #     - getCurrentZonecode()                      Ermittelt die aktulle Zone in Kurzform                            #
-; #     - AddZone(Name, X1, Y1, Z1, X2, Y2, Z2)     Fügt eine Zone zum Index hinzu                                    #
-; #     - AddCity(Name, X1, Y1, Z1, X2, Y2, Z2)     Fügt eine Stadt zum Index hinzu                                   #
+; # ----------------------------------------------------------------------------------------------------------------- #
+; #     - initZonesAndCities()                      Initialisiert eine Liste aller Standartgebiete                    #
+; #                                                 (wird implizit aufgerufen)                                        #
+; #     - AddZone(Name, X1, Y1, Z1, X2, Y2, Z2)     Fügt eine Zone zum Index hinzu  (wird implizit aufgerufen)        #
+; #     - AddCity(Name, X1, Y1, Z1, X2, Y2, Z2)     Fügt eine Stadt zum Index hinzu  (wird implizit aufgerufen)       #
 ; #####################################################################################################################
 ; # Sonstiges:                                                                                                        #
 ; #     - checkHandles()                                                                                              #
 ; #####################################################################################################################
 ; # Speicherfunktionen (intern genutzt):                                                                              #
-; #     - getPID(sProcess)                                                                                            #
+; #     - getPID(szWindow)                                                                                            #
 ; #     - openProcess(dwPID, dwRights)                                                                                #
 ; #     - closeProcess(hProcess)                                                                                      #
 ; #     - getModuleBaseAddress(sModule, dwPID)                                                                        #
@@ -196,6 +214,7 @@ sendChatMessage(wText) {
     if(!checkHandles())
         return false
     
+    dwFunc:=0
     if(SubStr(wText, 1, 1) == "/") {
         dwFunc := dwSAMP + FUNC_SAMP_SENDCMD
     } else {
@@ -413,14 +432,18 @@ updateScoreboardDataEx() {
     
 }
 
-updateOScoreboardData() {
+updateOScoreboardData(ex=0) {
     if(!checkHandles())
         return 0
     
     oScoreboardData := []
     iRefreshScoreboard := A_TickCount
     
-    updateScoreboardDataEx()
+    if(ex)
+    {
+        if(!updateScoreboardDataEx())
+            return 0
+    }
     
     dwAddress := readDWORD(hGTA, dwSAMP + SAMP_INFO_OFFSET)
     if(ErrorLevel || dwAddress==0) {
@@ -608,7 +631,7 @@ getPlayerPingById(dwId) {
         return -1
     }
     
-    if(!updateOScoreboardData())
+    if(!updateOScoreboardData(1))
         return -1
     
     Loop % oScoreboardData.MaxIndex()
@@ -633,7 +656,7 @@ getPlayerScoreById(dwId) {
         return ""
     }
     
-    if(!updateOScoreboardData())
+    if(!updateOScoreboardData(1))
         return ""
     
     Loop % oScoreboardData.MaxIndex()
@@ -645,6 +668,34 @@ getPlayerScoreById(dwId) {
 }
 
 ; ##### Spielerfunktionen #####
+getPlayerInteriorId() {
+    if(!checkHandles())
+        return -1
+    
+    iid := readMem(hGTA, ADDR_CPED_INTID, 4, "Int")
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return -1
+    }
+    
+    ErrorLevel := ERROR_OK
+    return iid
+}
+
+getPlayerMoney() {
+    if(!checkHandles())
+        return 0
+    
+    money := readMem(hGTA, ADDR_CPED_MONEY, 4, "Int")
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    ErrorLevel := ERROR_OK
+    return money
+}
+
 getPlayerHealth() {
     if(!checkHandles())
         return 0.0
@@ -687,6 +738,145 @@ getPlayerArmor() {
     return Round(fHealth, 2)
 }
 ; ##### Fahrzeugfunktionen #####
+getVehicleType() {              ;1=car, 2=boat, 3=train, 4=motorbike, 5=plane, 6=bike
+    if(!checkHandles())
+        return 0
+    
+    dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    if(!dwAddr)
+        return 0
+    
+    cVal := readMem(hGTA, dwAddr + ADDR_VEHICLE_TYPE, 1, "Char")
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    ErrorLevel := ERROR_OK
+    if(!cVal)
+    {
+        mid := getVehicleModelId()
+        Loop % oAirplaneModels.MaxIndex()
+        {
+            if(oAirplaneModels[A_Index]==mid)
+                return 5
+        }
+        return 1
+    }
+    else if(cVal==5)
+        return 2
+    else if(cVal==6)
+        return 3
+    else if(cVal==9)
+    {
+        mid := getVehicleModelId()
+        Loop % oBikeModels.MaxIndex()
+        {
+            if(oBikeModels[A_Index]==mid)
+                return 6
+        }
+        return 4
+    }
+    return 0
+}
+
+getVehicleModelId() {
+    if(!checkHandles())
+        return 0
+    
+    dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    if(!dwAddr)
+        return 0
+    
+    sVal := readMem(hGTA, dwAddr + ADDR_VEHICLE_MODEL, 2, "Short")
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    ErrorLevel := ERROR_OK
+    return sVal
+}
+
+getVehicleLightState() {
+    if(!checkHandles())
+        return 0
+    
+    dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    if(!dwAddr)
+        return 0
+    
+    dwVal := readMem(hGTA, dwAddr + ADDR_VEHICLE_LIGHTSTATE, 4, "Int")
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    ErrorLevel := ERROR_OK
+    return (dwVal>0)
+}
+
+getVehicleEngineState() {
+    if(!checkHandles())
+        return 0
+    
+    dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    if(!dwAddr)
+        return 0
+    
+    cVal := readMem(hGTA, dwAddr + ADDR_VEHICLE_ENGINESTATE, 1, "Char")
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    ErrorLevel := ERROR_OK
+    return (cVal==24 || cVal==88)
+}
+
+getVehicleLockState() {
+    if(!checkHandles())
+        return 0
+    
+    dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    if(!dwAddr)
+        return 0
+    
+    dwVal := readDWORD(hGTA, dwAddr + ADDR_VEHICLE_DOORSTATE)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    ErrorLevel := ERROR_OK
+    return (dwVal==2)
+}
+
 isPlayerInAnyVehicle()
 {
     if(!checkHandles())
@@ -698,7 +888,7 @@ isPlayerInAnyVehicle()
         return 0
     }
     
-    return dwVehPtr > 0
+    return (dwVehPtr > 0)
 }
 
 getVehicleHealth() {
@@ -750,6 +940,8 @@ getCoordinates() {
 }
 
 initZonesAndCities() {
+    if(bInitZaC)
+        return
     AddCity("Las Venturas", 685.0, 476.093, -500.0, 3000.0, 3000.0, 500.0)
     AddCity("San Fierro", -3000.0, -742.306, -500.0, -1270.53, 1530.24, 500.0)
     AddCity("San Fierro", -1270.53, -402.481, -500.0, -1038.45, 832.495, 500.0)
@@ -1142,7 +1334,7 @@ initZonesAndCities() {
 
 calculateZone(posX, posY, posZ) {
     
-    if ( bInitZaC == 0 )
+    if ( !bInitZaC )
     {
         initZonesAndCities()
         bInitZaC := 1
@@ -1163,7 +1355,7 @@ calculateZone(posX, posY, posZ) {
 
 calculateCity(posX, posY, posZ) {
     
-    if ( bInitZaC == 0 )
+    if ( !bInitZaC )
     {
         initZonesAndCities()
         bInitZaC := 1
@@ -1229,6 +1421,9 @@ AddCity(sName, x1, y1, z1, x2, y2, z2) {
 
 ; ##### Sonstiges #####
 checkHandles() {
+    if(iRefreshHandles+500>A_TickCount)
+        return true
+    iRefreshHandles:=A_TickCount
     if(!refreshGTA() || !refreshSAMP() || !refreshMemory()) {
         return false
     } else {

@@ -91,3 +91,12 @@ return
 Numpad6::
 showDialog(0, "Titel", "some text...", "OK" )
 return
+
+;Zeigt Infos über das eigene Fahrzeug
+Numpad7::
+addMessageToChatWindow("{FFFFFF}Vehicle Type:" getVehicleType())
+addMessageToChatWindow("{FFFFFF}Model:" getVehicleModelId())
+addMessageToChatWindow("{FFFFFF}Light State:" getVehicleLightState())
+addMessageToChatWindow("{FFFFFF}Engine State:" getVehicleEngineState())
+addMessageToChatWindow("{FFFFFF}Door State:" getVehicleLockState())
+return

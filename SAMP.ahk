@@ -437,13 +437,14 @@ updateOScoreboardData(ex=0) {
         return 0
     
     oScoreboardData := []
-    iRefreshScoreboard := A_TickCount
     
-    if(ex)
+    if(ex || iRefreshScoreboard+5000 < A_TickCount)
     {
         if(!updateScoreboardDataEx())
             return 0
     }
+    
+    iRefreshScoreboard := A_TickCount
     
     dwAddress := readDWORD(hGTA, dwSAMP + SAMP_INFO_OFFSET)
     if(ErrorLevel || dwAddress==0) {

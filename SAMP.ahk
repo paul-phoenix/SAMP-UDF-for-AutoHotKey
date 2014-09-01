@@ -76,6 +76,9 @@ global SAMP_ILOCALPLAYERPING_OFFSET         := 0x26
 global SAMP_ILOCALPLAYERSCORE_OFFSET        := 0x2A
 global SAMP_IPING_OFFSET                    := 0xC
 global SAMP_ISCORE_OFFSET                   := 0x4
+global SAMP_ISNPC_OFFSET                    := 0x0
+
+global SAMP_PLAYER_MAX						:= 1004
 
 ; Größen
 global SIZE_SAMP_CHATMSG               := 0xFC
@@ -95,11 +98,13 @@ global bInitZaC                        := 0
 global iRefreshScoreboard              := 0
 global oScoreboardData                 := ""
 global iRefreshHandles                 := 0
+global iUpdateTick                     := 2500
 
 ; #####################################################################################################################
 ; # SAMP-Funktionen:                                                                                                  #
 ; #     - isInChat()                                Prüft, ob der Spieler gerade chattet oder in einem Dialog ist     #
 ; #     - getUsername()                             Liest den Namen des Spielers aus                                  #
+; #     - getId()                                   Liest die ID des Spielers aus                                     #
 ; #     - sendChatMessage(wText)                    Sendet eine Nachricht od. einen Befehl direkt an den Server       #
 ; #     - addMessageToChatWindow(wText)             Fügt eine Zeile in den Chat ein (nur für den Spieler sichtbar)    #
 ; #     - showGameText(wText, dwTime, dwTextsize)   Zeigt einen Text inmitten des Bildschirmes an                     #
@@ -110,6 +115,7 @@ global iRefreshHandles                 := 0
 ; #     - getPlayerScoreById(dwId)                  Zeigt den Score zu der Id                                         #
 ; #     - getPlayerPingById(dwId)                   Zeigt den Ping zu der Id                                          #
 ; #     - getPlayerNameById(dwId)                   Zeigt den Namen zu der Id                                         #
+; #     - isNPCById(dwId)                           Prüft, ob ein Spieler ein NPC ist                                 #
 ; #     - getPlayerIdByName(wName)                  Zeigt die Id zu dem Namen                                         #
 ; #     - showDialog(dwStyle, wCaption,             Zeigt eine Dialog-Box an                                          #
 ; #                   wInfo, wButton1)                                                                                #
@@ -172,19 +178,19 @@ global iRefreshHandles                 := 0
 
 isInChat() {
     if(!checkHandles())
-        return false
+        return -1
     
     dwPtr := dwSAMP + ADDR_SAMP_INCHAT_PTR
     dwAddress := readDWORD(hGTA, dwPtr) + ADDR_SAMP_INCHAT_PTR_OFF
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return false
+        return -1
     }
     
     dwInChat := readDWORD(hGTA, dwAddress)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return false
+        return -1
     }
     
     ErrorLevel := ERROR_OK
@@ -197,17 +203,22 @@ isInChat() {
 
 getUsername() {
     if(!checkHandles())
-        return "Unbekannt"
+        return ""
     
     dwAddress := dwSAMP + ADDR_SAMP_USERNAME
     sUsername := readString(hGTA, dwAddress, 25)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return "Unbekannt"
+        return ""
     }
     
     ErrorLevel := ERROR_OK
     return sUsername
+}
+
+getId() {
+	s:=getUsername()
+	return getPlayerIdByName(s)
 }
 
 sendChatMessage(wText) {
@@ -438,7 +449,7 @@ updateOScoreboardData(ex=0) {
     
     oScoreboardData := []
     
-    if(ex || iRefreshScoreboard+5000 < A_TickCount)
+    if(ex && iRefreshScoreboard+5000 < A_TickCount)
     {
         if(!updateScoreboardDataEx())
             return 0
@@ -508,9 +519,9 @@ updateOScoreboardData(ex=0) {
             return 0
         }
     }
-    oScoreboardData.Insert( Object("NAME", sUsername, "ID", wID, "PING", dwPing, "SCORE", dwScore) )
+    oScoreboardData[wID] := Object("NAME", sUsername, "ID", wID, "PING", dwPing, "SCORE", dwScore, "ISNPC", 0)
     
-    Loop, 1004
+    Loop, % SAMP_PLAYER_MAX
     {
         i := A_Index-1
         
@@ -530,6 +541,12 @@ updateOScoreboardData(ex=0) {
         }
         
         dwScore := readMem(hGTA, dwRemoteplayer + SAMP_ISCORE_OFFSET, 4, "Int")
+        if(ErrorLevel) {
+            ErrorLevel := ERROR_READ_MEMORY
+            return 0
+        }
+		
+		dwIsNPC := readMem(hGTA, dwRemoteplayer + SAMP_ISNPC_OFFSET, 4, "Int")
         if(ErrorLevel) {
             ErrorLevel := ERROR_READ_MEMORY
             return 0
@@ -560,9 +577,9 @@ updateOScoreboardData(ex=0) {
                 ErrorLevel := ERROR_READ_MEMORY
                 return 0
             }
-            
         }
-        oScoreboardData.Insert( Object("NAME", sUsername, "ID", i, "PING", dwPing, "SCORE", dwScore) )
+        o := Object("NAME", sUsername, "ID", i, "PING", dwPing, "SCORE", dwScore, "ISNPC", dwIsNPC)
+        oScoreboardData[i] := o
     }
     ErrorLevel := ERROR_OK
     return 1
@@ -572,12 +589,12 @@ getPlayerIdByName(wName) {
     if(StrLen(wName) < 1 || StrLen(wName) > 24)
         return -1
     
-    if(iRefreshScoreboard+1000 > A_TickCount)
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
     {
-        Loop % oScoreboardData.MaxIndex()
+        For i, o in oScoreboardData
         {
-            if(InStr(oScoreboardData[A_Index].NAME,wName)==1)
-                return oScoreboardData[A_Index].ID
+            if(InStr(o.NAME,wName)==1)
+                return i
         }
         return -1
     }
@@ -585,87 +602,88 @@ getPlayerIdByName(wName) {
     if(!updateOScoreboardData())
         return -1
     
-    Loop % oScoreboardData.MaxIndex()
+    For i, o in oScoreboardData
     {
-        if(InStr(oScoreboardData[A_Index].NAME,wName)==1)
-            return oScoreboardData[A_Index].ID
+        if(InStr(o.NAME,wName)==1)
+            return i
     }
     return -1
 }
 
 getPlayerNameById(dwId) {
-    if(dwId < 0 || dwId > 1004)
+    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
         return ""
     
-    if(iRefreshScoreboard+1000 > A_TickCount)
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
     {
-        Loop % oScoreboardData.MaxIndex()
-        {
-            if(oScoreboardData[A_Index].ID==dwId)
-                return oScoreboardData[A_Index].NAME
-        }
+        if(oScoreboardData[dwId])
+            return oScoreboardData[dwId].NAME
         return ""
     }
     
     if(!updateOScoreboardData())
         return ""
     
-    Loop % oScoreboardData.MaxIndex()
-    {
-        if(oScoreboardData[A_Index].ID==dwId)
-            return oScoreboardData[A_Index].NAME
-    }
+    if(oScoreboardData[dwId])
+        return oScoreboardData[dwId].NAME
     return ""
 }
 
 getPlayerPingById(dwId) {
-    if(dwId < 0 || dwId > 1004)
+    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
         return -1
         
-    if(iRefreshScoreboard+1000 > A_TickCount)
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
     {
-        Loop % oScoreboardData.MaxIndex()
-        {
-            if(oScoreboardData[A_Index].ID==dwId)
-                return oScoreboardData[A_Index].PING
-        }
+        if(oScoreboardData[dwId])
+            return oScoreboardData[dwId].PING
         return -1
     }
     
     if(!updateOScoreboardData(1))
         return -1
     
-    Loop % oScoreboardData.MaxIndex()
-    {
-        if(oScoreboardData[A_Index].ID==dwId)
-            return oScoreboardData[A_Index].PING
-    }
+    if(oScoreboardData[dwId])
+        return oScoreboardData[dwId].PING
     return -1
 }
 
 getPlayerScoreById(dwId) {
-    if(dwId < 0 || dwId > 1004)
+    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
         return ""
     
-    if(iRefreshScoreboard+1000 > A_TickCount)
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
     {
-        Loop % oScoreboardData.MaxIndex()
-        {
-            if(oScoreboardData[A_Index].ID==dwId)
-                return oScoreboardData[A_Index].SCORE
-        }
+        if(oScoreboardData[dwId])
+            return oScoreboardData[dwId].SCORE
         return ""
     }
     
     if(!updateOScoreboardData(1))
         return ""
     
-    Loop % oScoreboardData.MaxIndex()
-    {
-        if(oScoreboardData[A_Index].ID==dwId)
-            return oScoreboardData[A_Index].SCORE
-    }
+    if(oScoreboardData[dwId])
+        return oScoreboardData[dwId].SCORE
     return ""
+}
+
+isNPCById(dwId) {
+    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
+        return -1
+    
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
+    {
+        if(oScoreboardData[dwId])
+            return oScoreboardData[dwId].ISNPC
+        return -1
+    }
+    
+    if(!updateOScoreboardData())
+        return -1
+    
+    if(oScoreboardData[dwId])
+        return oScoreboardData[dwId].ISNPC
+    return -1
 }
 
 ; ##### Spielerfunktionen #####

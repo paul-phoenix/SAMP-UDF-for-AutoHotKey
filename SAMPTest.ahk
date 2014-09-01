@@ -61,7 +61,7 @@ Hotkey, Escape, On
 Input varID, V I M,{enter}
 SendInput {end}+{home}{Del}{esc}
 ;updateScoreboardData()     ;wird nun implizit aufgerufen
-showGameText(getPlayerNameById(varID) "~n~Score: " getPlayerScoreById(varID) "~n~Ping: " getPlayerPingById(varID), 2000, 5)
+showGameText(getPlayerNameById(varID) "~n~Score: " getPlayerScoreById(varID) "~n~Ping: " getPlayerPingById(varID) "~n~IsNPC: " isNPCById(varID), 2000, 5)
 return
 
 ;Spielt einen "Audio Stream" ab

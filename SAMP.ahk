@@ -109,7 +109,7 @@ global iUpdateTick                     := 2500      ;time in ms, used for getPla
 ; #     - showDialog(dwStyle, wCaption,             show a dialog-box                                                 #
 ; #                   wInfo, wButton1)                                                                                #
 ; #     - playAudioStream(wUrl)                     play an "audio stream"                                            #
-; #     - stopAudioStream()                         stopp a audio stream                                              #
+; #     - stopAudioStream()                         stopp an audio stream                                             #
 ; # ----------------------------------------------------------------------------------------------------------------- #
 ; #     - patchRadio()                              (internal stuff)                                                  #
 ; #     - unPatchRadio()                            (internal stuff)                                                  #

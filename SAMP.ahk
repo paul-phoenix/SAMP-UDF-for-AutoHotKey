@@ -127,9 +127,11 @@ global iUpdateTick                     := 2500
 ; #####################################################################################################################
 ; # Fahrzeugfunktionen:                                                                                               #
 ; #     - isPlayerInAnyVehicle()                    Ermittelt, ob sich der Spieler in einem Fahrzeug befindet         #
+; #     - isPlayerDriver()                                                                                            #
 ; #     - getVehicleHealth()                        Ermittelt die HP des Fahrzeugs, in dem der Spieler sitzt          #
-; #     - getVehicleType()                          (ist selbsterkärend...)                                           #
+; #     - getVehicleType()                                                                                            #
 ; #     - getVehicleModelId()                                                                                         #
+; #     - getVehicleModelName()                                                                                       #
 ; #     - getVehicleLightState()                                                                                      #
 ; #     - getVehicleEngineState()                                                                                     #
 ; #     - getVehicleLockState()                                                                                       #
@@ -139,7 +141,7 @@ global iUpdateTick                     := 2500
 ; # ----------------------------------------------------------------------------------------------------------------- #
 ; #     - calculateZone(X, Y, Z)                    Bestimmt die Zone (= Stadtteil) aus den geg. Koordinaten          #
 ; #     - calculateCity(X, Y, Z)                    Bestimmt die Stadt aus den geg. Koordinaten                       #
-; #     - getCurrentZonecode()                      Ermittelt die aktulle Zone in Kurzform                            #
+; #     - getCurrentZonecode()                      Ermittelt die aktulle Zone in Kurzform (verbuggt)                 #
 ; # ----------------------------------------------------------------------------------------------------------------- #
 ; #     - initZonesAndCities()                      Initialisiert eine Liste aller Standartgebiete                    #
 ; #                                                 (wird implizit aufgerufen)                                        #
@@ -167,8 +169,6 @@ global iUpdateTick                     := 2500
 ; #     - waitForSingleObject(hThread, dwMilliseconds)                                                                #
 ; #     - __ansiToUnicode(sString, nLen = 0)                                                                          #
 ; #     - __unicodeToAnsi(wString, nLen = 0)                                                                          #
-; #     - __toHex(iIn)                                                                                                #
-; #     - __toLittleEndian(hexIn)                                                                                     #
 ; #####################################################################################################################
 
 ; ##### SAMP-Funktionen #####
@@ -756,7 +756,7 @@ getPlayerArmor() {
 }
 
 ; ##### Fahrzeugfunktionen #####
-getModelName() {
+getVehicleModelName() {
     id:=getVehicleModelId()
     if(id>400 && id <611)
     {

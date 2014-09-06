@@ -96,7 +96,7 @@ return
 Numpad7::
 addMessageToChatWindow("{FFFFFF}Vehicle Type:" getVehicleType())
 addMessageToChatWindow("{FFFFFF}Model:" getVehicleModelId())
-addMessageToChatWindow("{FFFFFF}Model Name:" getModelName())
+addMessageToChatWindow("{FFFFFF}Model Name:" getVehicleModelName())
 addMessageToChatWindow("{FFFFFF}Is Driver:" isPlayerDriver())
 addMessageToChatWindow("{FFFFFF}Light State:" getVehicleLightState())
 addMessageToChatWindow("{FFFFFF}Engine State:" getVehicleEngineState())

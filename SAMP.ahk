@@ -21,7 +21,7 @@ global ERROR_FREE_MEMORY               := 11
 global ERROR_WAIT_FOR_OBJECT           := 12
 global ERROR_CREATE_THREAD             := 13
 
-; GTA Adressen
+; GTA Addresses
 global ADDR_ZONECODE                   := 0xA49AD4
 global ADDR_POSITION_X                 := 0xB6F2E4
 global ADDR_POSITION_Y                 := 0xB6F2E8
@@ -44,7 +44,7 @@ global oAirplaneModels                 := [417, 425, 447, 460, 469, 476, 487, 48
 global oBikeModels                     := [481,509,510]
 global ovehicleNames                   := ["Landstalker","Bravura","Buffalo","Linerunner","Perrenial","Sentinel","Dumper","Firetruck","Trashmaster","Stretch","Manana","Infernus","Voodoo","Pony","Mule","Cheetah","Ambulance","Leviathan","Moonbeam","Esperanto","Taxi","Washington","Bobcat","Whoopee","BFInjection","Hunter","Premier","Enforcer","Securicar","Banshee","Predator","Bus","Rhino","Barracks","Hotknife","Trailer","Previon","Coach","Cabbie","Stallion","Rumpo","RCBandit","Romero","Packer","Monster","Admiral","Squalo","Seasparrow","Pizzaboy","Tram","Trailer","Turismo","Speeder","Reefer","Tropic","Flatbed","Yankee","Caddy","Solair","Berkley'sRCVan","Skimmer","PCJ-600","Faggio","Freeway","RCBaron","RCRaider","Glendale","Oceanic","Sanchez","Sparrow","Patriot","Quad","Coastguard","Dinghy","Hermes","Sabre","Rustler","ZR-350","Walton","Regina","Comet","BMX","Burrito","Camper","Marquis","Baggage","Dozer","Maverick","NewsChopper","Rancher","FBIRancher","Virgo","Greenwood","Jetmax","Hotring","Sandking","BlistaCompact","PoliceMaverick","Boxvillde","Benson","Mesa","RCGoblin","HotringRacerA","HotringRacerB","BloodringBanger","Rancher","SuperGT","Elegant","Journey","Bike","MountainBike","Beagle","Cropduster","Stunt","Tanker","Roadtrain","Nebula","Majestic","Buccaneer","Shamal","hydra","FCR-900","NRG-500","HPV1000","CementTruck","TowTruck","Fortune","Cadrona","FBITruck","Willard","Forklift","Tractor","Combine","Feltzer","Remington","Slamvan","Blade","Freight","Streak","Vortex","Vincent","Bullet","Clover","Sadler","Firetruck","Hustler","Intruder","Primo","Cargobob","Tampa","Sunrise","Merit","Utility","Nevada","Yosemite","Windsor","Monster","Monster","Uranus","Jester","Sultan","Stratum","Elegy","Raindance","RCTiger","Flash","Tahoma","Savanna","Bandito","FreightFlat","StreakCarriage","Kart","Mower","Dune","Sweeper","Broadway","Tornado","AT-400","DFT-30","Huntley","Stafford","BF-400","NewsVan","Tug","Trailer","Emperor","Wayfarer","Euros","Hotdog","Club","FreightBox","Trailer","Andromada","Dodo","RCCam","Launch","PoliceCar","PoliceCar","PoliceCar","PoliceRanger","Picador","S.W.A.T","Alpha","Phoenix","GlendaleShit","SadlerShit","Luggage","Luggage","Stairs","Boxville","Tiller","UtilityTrailer"]
 
-; SAMP Adressen
+; SAMP Addresses
 global ADDR_SAMP_INCHAT_PTR            := 0x212A94
 global ADDR_SAMP_INCHAT_PTR_OFF        := 0x55
 global ADDR_SAMP_USERNAME              := 0x2123F7
@@ -78,10 +78,10 @@ global SAMP_ISNPC_OFFSET                    := 0x0
 
 global SAMP_PLAYER_MAX                      := 1004
 
-; Größen
+; Sizes
 global SIZE_SAMP_CHATMSG               := 0xFC
 
-; Intern
+; Internal
 global hGTA                            := 0x0
 global dwGTAPID                        := 0x0
 global dwSAMP                          := 0x0
@@ -96,62 +96,67 @@ global bInitZaC                        := 0
 global iRefreshScoreboard              := 0
 global oScoreboardData                 := ""
 global iRefreshHandles                 := 0
-global iUpdateTick                     := 2500
+global iUpdateTick                     := 2500      ;time in ms, used for getPlayerNameById etc. to refresh data
 
 ; #####################################################################################################################
-; # SAMP-Funktionen:                                                                                                  #
-; #     - isInChat()                                Prüft, ob der Spieler gerade chattet oder in einem Dialog ist     #
-; #     - getUsername()                             Liest den Namen des Spielers aus                                  #
-; #     - getId()                                   Liest die ID des Spielers aus                                     #
-; #     - sendChatMessage(wText)                    Sendet eine Nachricht od. einen Befehl direkt an den Server       #
-; #     - addMessageToChatWindow(wText)             Fügt eine Zeile in den Chat ein (nur für den Spieler sichtbar)    #
-; #     - showGameText(wText, dwTime, dwTextsize)   Zeigt einen Text inmitten des Bildschirmes an                     #
-; #####################################################################################################################
-; # Neue SAMP-Funktionen:                                                                                             #
-; #     - playAudioStream(wUrl)                     Spielt einen "Audio Stream" ab                                    #
-; #     - stopAudioStream()                         Stoppt den aktuellen Audio Stream                                 #
-; #     - getPlayerScoreById(dwId)                  Zeigt den Score zu der Id                                         #
-; #     - getPlayerPingById(dwId)                   Zeigt den Ping zu der Id                                          #
-; #     - getPlayerNameById(dwId)                   Zeigt den Namen zu der Id                                         #
-; #     - isNPCById(dwId)                           Prüft, ob ein Spieler ein NPC ist                                 #
-; #     - getPlayerIdByName(wName)                  Zeigt die Id zu dem Namen                                         #
-; #     - showDialog(dwStyle, wCaption,             Zeigt eine Dialog-Box an                                          #
+; # SAMP-Functions:                                                                                                   #
+; #     - isInChat()                                check if dialog or chatbox is active                              #
+; #     - getUsername()                             get local player name                                             #
+; #     - getId()                                   get local player id                                               #
+; #     - sendChatMessage(wText)                    send a message to the server                                      #
+; #     - addMessageToChatWindow(wText)             add a "private" text to the chatbox                               #
+; #     - showGameText(wText, dwTime, dwTextsize)   show a text on the sreen                                          #
+; #     - showDialog(dwStyle, wCaption,             show a dialog-box                                                 #
 ; #                   wInfo, wButton1)                                                                                #
+; #     - playAudioStream(wUrl)                     play an "audio stream"                                            #
+; #     - stopAudioStream()                         stopp a audio stream                                              #
 ; # ----------------------------------------------------------------------------------------------------------------- #
-; #     - updateScoreboardDataEx()                  Aktualisiert Scoreboard Inhalte (wird implizit aufgerufen)        #
-; #     - updateOScoreboardData()                   Aktualisiert Scoreboard Inhalte (wird implizit aufgerufen)        #
+; #     - patchRadio()                              (internal stuff)                                                  #
+; #     - unPatchRadio()                            (internal stuff)                                                  #
 ; #####################################################################################################################
-; # Spielerfunktionen:                                                                                                #
-; #     - getPlayerHealth()                         Ermittelt die HP des Spielers                                     #
-; #     - getPlayerArmor()                          Ermittelt den Rüstungswert des Spielers                           #
-; #####################################################################################################################
-; # Fahrzeugfunktionen:                                                                                               #
-; #     - isPlayerInAnyVehicle()                    Ermittelt, ob sich der Spieler in einem Fahrzeug befindet         #
-; #     - isPlayerDriver()                                                                                            #
-; #     - getVehicleHealth()                        Ermittelt die HP des Fahrzeugs, in dem der Spieler sitzt          #
-; #     - getVehicleType()                                                                                            #
-; #     - getVehicleModelId()                                                                                         #
-; #     - getVehicleModelName()                                                                                       #
-; #     - getVehicleLightState()                                                                                      #
-; #     - getVehicleEngineState()                                                                                     #
-; #     - getVehicleLockState()                                                                                       #
-; #####################################################################################################################
-; # Standpunktbestimmung:                                                                                             #
-; #     - getCoordinates()                          Ermittelt die aktuelle Position (Koordinaten)                     #
+; #     - getPlayerNameById(dwId)                   get some player's name                                            #
+; #     - getPlayerIdByName(wName)                  get some player's id                                              #
+; #     - getPlayerScoreById(dwId)                  get some player's score                                           #
+; #     - getPlayerPingById(dwId)                   get some player's ping                                            #
+; #     - isNPCById(dwId)                           check if player is a NPC                                          #
 ; # ----------------------------------------------------------------------------------------------------------------- #
-; #     - calculateZone(X, Y, Z)                    Bestimmt die Zone (= Stadtteil) aus den geg. Koordinaten          #
-; #     - calculateCity(X, Y, Z)                    Bestimmt die Stadt aus den geg. Koordinaten                       #
-; #     - getCurrentZonecode()                      Ermittelt die aktulle Zone in Kurzform (verbuggt)                 #
-; # ----------------------------------------------------------------------------------------------------------------- #
-; #     - initZonesAndCities()                      Initialisiert eine Liste aller Standartgebiete                    #
-; #                                                 (wird implizit aufgerufen)                                        #
-; #     - AddZone(Name, X1, Y1, Z1, X2, Y2, Z2)     Fügt eine Zone zum Index hinzu  (wird implizit aufgerufen)        #
-; #     - AddCity(Name, X1, Y1, Z1, X2, Y2, Z2)     Fügt eine Stadt zum Index hinzu  (wird implizit aufgerufen)       #
+; #     - updateScoreboardDataEx()                  (internal stuff)                                                  #
+; #     - updateOScoreboardData(ex=0)               (internal stuff)                                                  #
 ; #####################################################################################################################
-; # Sonstiges:                                                                                                        #
+; # Player Functions :                                                                                                #
+; #     - getPlayerHealth()                         get HP                                                            #
+; #     - getPlayerArmor()                          get ARMOR                                                         #
+; #     - getPlayerInteriorId()                     get interior id                                                   #
+; #     - getPlayerMoney()                          get player money                                                  #
+; #####################################################################################################################
+; # Vehicle Functions:                                                                                                #
+; #     - isPlayerInAnyVehicle()                    check if the local player is inside some vehicle                  #
+; #     - isPlayerDriver()                          check if player is driver                                         #
+; #     - getVehicleHealth()                        get vehicle health                                                #
+; #     - getVehicleType()                          get vehicle type                                                  #
+; #     - getVehicleModelId()                       get vehicle model id                                              #
+; #     - getVehicleModelName()                     get vehicle model name                                            #
+; #     - getVehicleLightState()                    get vehicle light state                                           #
+; #     - getVehicleEngineState()                   get vehicle engine state                                          #
+; #     - getVehicleLockState()                     get vehicle door lock state                                       #
+; #####################################################################################################################
+; # Coordinates:                                                                                                      #
+; #     - getCoordinates()                          get local player's position                                       #
+; # ----------------------------------------------------------------------------------------------------------------- #
+; #     - calculateZone(X, Y, Z)                    get zone                                                          #
+; #     - calculateCity(X, Y, Z)                    get city                                                          #
+; #     - getCurrentZonecode()                      get zone code (buggy)                                             #
+; #####################################################################################################################
+; # Internal Functions:                                                                                               #
+; #     - initZonesAndCities()                                                                                        #
+; #     - AddZone(Name, X1, Y1, Z1, X2, Y2, Z2)                                                                       #
+; #     - AddCity(Name, X1, Y1, Z1, X2, Y2, Z2)                                                                       #
+; #####################################################################################################################
+; # Memory Functions:                                                                                                 #
 ; #     - checkHandles()                                                                                              #
-; #####################################################################################################################
-; # Speicherfunktionen (intern genutzt):                                                                              #
+; #     - refreshGTA()                                                                                                #
+; #     - refreshSAMP()                                                                                               #
+; #     - refreshMemory()                                                                                             #
 ; #     - getPID(szWindow)                                                                                            #
 ; #     - openProcess(dwPID, dwRights)                                                                                #
 ; #     - closeProcess(hProcess)                                                                                      #
@@ -159,9 +164,10 @@ global iUpdateTick                     := 2500
 ; #     - readString(hProcess, dwAddress, dwLen)                                                                      #
 ; #     - readFloat(hProcess, dwAddress)                                                                              #
 ; #     - readDWORD(hProcess, dwAddress)                                                                              #
-; #     - readRaw(hProcess, dwAddress, dwLen)                                                                         #
+; #     - readMem(hProcess, dwAddress, dwLen=4, type="UInt")                                                          #
 ; #     - writeString(hProcess, dwAddress, wString)                                                                   #
 ; #     - writeRaw(hProcess, dwAddress, data, dwLen)                                                                  #
+; #     - callWithParams(hProcess, dwFunc, aParams, bCleanupStack = true)                                             #
 ; #     - virtualAllocEx(hProcess, dwSize, flAllocationType, flProtect)                                               #
 ; #     - virtualFreeEx(hProcess, lpAddress, dwSize, dwFreeType)                                                      #
 ; #     - createRemoteThread(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter,                  #
@@ -171,9 +177,11 @@ global iUpdateTick                     := 2500
 ; #     - __unicodeToAnsi(wString, nLen = 0)                                                                          #
 ; #####################################################################################################################
 
-; ##### SAMP-Funktionen #####
+; ##### SAMP-Functions #####
 
-
+; 1  = chat/dialog open
+; 0  = not open
+; -1 = error
 isInChat() {
     if(!checkHandles())
         return -1
@@ -199,6 +207,7 @@ isInChat() {
     }
 }
 
+; get nickname or empty string ""
 getUsername() {
     if(!checkHandles())
         return ""
@@ -214,12 +223,16 @@ getUsername() {
     return sUsername
 }
 
+; get local player id or -1 on error
 getId() {
     s:=getUsername()
     return getPlayerIdByName(s)
 }
 
+; pass a string to send a chat message to the server
 sendChatMessage(wText) {
+    wText := "" wText
+    
     if(!checkHandles())
         return false
     
@@ -236,7 +249,11 @@ sendChatMessage(wText) {
     return true
 }
 
+; similar to: http://wiki.sa-mp.com/wiki/SendClientMessage
+; pass a string to add a private message to the chatbox
 addMessageToChatWindow(wText) {
+    wText := "" wText
+
     if(!checkHandles())
         return false
     
@@ -253,7 +270,17 @@ addMessageToChatWindow(wText) {
     return true
 }
 
+; similar to: http://wiki.sa-mp.com/wiki/GameTextForPlayer
+; wText	The text to be displayed.
+; dwTime	The duration of the text being shown in milliseconds.
+; dwStyle	The style of text to be displayed.
 showGameText(wText, dwTime, dwSize) {
+    wText := "" wText
+    dwTime += 0
+    dwTime := Floor(dwTime)
+    dwSize += 0
+    dwSize := Floor(dwSize)
+
     if(!checkHandles())
         return false
     
@@ -265,78 +292,18 @@ showGameText(wText, dwTime, dwSize) {
     return true
 }
 
-playAudioStream(wUrl) {
-    if(!checkHandles())
-        return false
-    
-    dwFunc := dwSAMP + FUNC_SAMP_PLAYAUDIOSTR
-    
-    patchRadio()
-    
-    callWithParams(hGTA, dwFunc, [["s", wUrl], ["i", 0], ["i", 0], ["i", 0], ["i", 0], ["i", 0]], false)
-    
-    unPatchRadio()
-    
-    ErrorLevel := ERROR_OK
-    return true
-}
-
-stopAudioStream() {
-    if(!checkHandles())
-        return false
-    
-    dwFunc := dwSAMP + FUNC_SAMP_STOPAUDIOSTR
-    
-    patchRadio()
-    
-    callWithParams(hGTA, dwFunc, [["i", 1]], false)
-    
-    unPatchRadio()
-    
-    ErrorLevel := ERROR_OK
-    return true
-}
-
-patchRadio()
-{
-    if(!checkHandles())
-        return false
-    
-    VarSetCapacity(nop, 4, 0)
-    NumPut(0x90909090,nop,0,"UInt")
-    
-    dwFunc := dwSAMP + FUNC_SAMP_PLAYAUDIOSTR
-    writeRaw(hGTA, dwFunc, &nop, 4)
-    writeRaw(hGTA, dwFunc+4, &nop, 1)
-    
-    dwFunc := dwSAMP + FUNC_SAMP_STOPAUDIOSTR
-    writeRaw(hGTA, dwFunc, &nop, 4)
-    writeRaw(hGTA, dwFunc+4, &nop, 1)
-    return true
-}
-
-unPatchRadio()
-{
-    if(!checkHandles())
-        return false
-    
-    VarSetCapacity(old, 4, 0)
-    
-    dwFunc := dwSAMP + FUNC_SAMP_PLAYAUDIOSTR
-    NumPut(0x74003980,old,0,"UInt")
-    writeRaw(hGTA, dwFunc, &old, 4)
-    NumPut(0x39,old,0,"UChar")
-    writeRaw(hGTA, dwFunc+4, &old, 1)
-    
-    dwFunc := dwSAMP + FUNC_SAMP_STOPAUDIOSTR
-    NumPut(0x74003980,old,0,"UInt")
-    writeRaw(hGTA, dwFunc, &old, 4)
-    NumPut(0x09,old,0,"UChar")
-    writeRaw(hGTA, dwFunc+4, &old, 1)
-    return true
-}
-
+; similar to: http://wiki.sa-mp.com/wiki/ShowPlayerDialog
+; dwStyle	The style of the dialog.
+; wCaption	The title at the top of the dialog. The length of the caption can not exceed more than 64 characters before it starts to cut off.
+; wInfo	The text to display in the main dialog. Use \n to start a new line and \t to tabulate.
+; wButton1	The text on the left button.
 showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
+    dwStyle += 0
+    dwStyle := Floor(dwStyle)
+    wCaption := "" wCaption
+    wInfo := "" wInfo
+    wButton1 := "" wButton1
+
     if(!checkHandles())
         return false
     
@@ -402,6 +369,208 @@ showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
     return true
 }
 
+; similar to: http://wiki.sa-mp.com/wiki/PlayAudioStreamForPlayer
+; pass a url to play some sound
+playAudioStream(wUrl) {
+    wUrl := "" wUrl
+    
+    if(!checkHandles())
+        return false
+    
+    dwFunc := dwSAMP + FUNC_SAMP_PLAYAUDIOSTR
+    
+    patchRadio()
+    
+    callWithParams(hGTA, dwFunc, [["s", wUrl], ["i", 0], ["i", 0], ["i", 0], ["i", 0], ["i", 0]], false)
+    
+    unPatchRadio()
+    
+    ErrorLevel := ERROR_OK
+    return true
+}
+
+; stop a audio stream
+stopAudioStream() {
+    if(!checkHandles())
+        return false
+    
+    dwFunc := dwSAMP + FUNC_SAMP_STOPAUDIOSTR
+    
+    patchRadio()
+    
+    callWithParams(hGTA, dwFunc, [["i", 1]], false)
+    
+    unPatchRadio()
+    
+    ErrorLevel := ERROR_OK
+    return true
+}
+
+; needed for audio stream
+patchRadio()
+{
+    if(!checkHandles())
+        return false
+    
+    VarSetCapacity(nop, 4, 0)
+    NumPut(0x90909090,nop,0,"UInt")
+    
+    dwFunc := dwSAMP + FUNC_SAMP_PLAYAUDIOSTR
+    writeRaw(hGTA, dwFunc, &nop, 4)
+    writeRaw(hGTA, dwFunc+4, &nop, 1)
+    
+    dwFunc := dwSAMP + FUNC_SAMP_STOPAUDIOSTR
+    writeRaw(hGTA, dwFunc, &nop, 4)
+    writeRaw(hGTA, dwFunc+4, &nop, 1)
+    return true
+}
+
+; needed for audio stream
+unPatchRadio()
+{
+    if(!checkHandles())
+        return false
+    
+    VarSetCapacity(old, 4, 0)
+    
+    dwFunc := dwSAMP + FUNC_SAMP_PLAYAUDIOSTR
+    NumPut(0x74003980,old,0,"UInt")
+    writeRaw(hGTA, dwFunc, &old, 4)
+    NumPut(0x39,old,0,"UChar")
+    writeRaw(hGTA, dwFunc+4, &old, 1)
+    
+    dwFunc := dwSAMP + FUNC_SAMP_STOPAUDIOSTR
+    NumPut(0x74003980,old,0,"UInt")
+    writeRaw(hGTA, dwFunc, &old, 4)
+    NumPut(0x09,old,0,"UChar")
+    writeRaw(hGTA, dwFunc+4, &old, 1)
+    return true
+}
+
+; pass an id to get nickname
+; returns an empty string on error
+getPlayerNameById(dwId) {
+    dwId += 0
+    dwId := Floor(dwId)
+    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
+        return ""
+    
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
+    {
+        if(oScoreboardData[dwId])
+            return oScoreboardData[dwId].NAME
+        return ""
+    }
+    
+    if(!updateOScoreboardData())
+        return ""
+    
+    if(oScoreboardData[dwId])
+        return oScoreboardData[dwId].NAME
+    return ""
+}
+
+; pass a nickname or a part of it to get id
+; (not case sensivite)
+; returns -1 on error
+getPlayerIdByName(wName) {
+    wName := "" wName
+    if(StrLen(wName) < 1 || StrLen(wName) > 24)
+        return -1
+    
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
+    {
+        For i, o in oScoreboardData
+        {
+            if(InStr(o.NAME,wName)==1)
+                return i
+        }
+        return -1
+    }
+    
+    if(!updateOScoreboardData())
+        return -1
+    
+    For i, o in oScoreboardData
+    {
+        if(InStr(o.NAME,wName)==1)
+            return i
+    }
+    return -1
+}
+
+; pass an id to get score
+; returns an empty string on error
+getPlayerScoreById(dwId) {
+    dwId += 0
+    dwId := Floor(dwId)
+    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
+        return ""
+    
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
+    {
+        if(oScoreboardData[dwId])
+            return oScoreboardData[dwId].SCORE
+        return ""
+    }
+    
+    if(!updateOScoreboardData(1))
+        return ""
+    
+    if(oScoreboardData[dwId])
+        return oScoreboardData[dwId].SCORE
+    return ""
+}
+
+; pass an id to get ping
+; returns -1 on error
+getPlayerPingById(dwId) {
+    dwId += 0
+    dwId := Floor(dwId)
+    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
+        return -1
+        
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
+    {
+        if(oScoreboardData[dwId])
+            return oScoreboardData[dwId].PING
+        return -1
+    }
+    
+    if(!updateOScoreboardData(1))
+        return -1
+    
+    if(oScoreboardData[dwId])
+        return oScoreboardData[dwId].PING
+    return -1
+}
+
+; pass an id to check if id is a NPC
+; 1 = id is a NPC
+; 0 = id is a human, usually ;)
+; returns -1 on error
+isNPCById(dwId) {
+    dwId += 0
+    dwId := Floor(dwId)
+    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
+        return -1
+    
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
+    {
+        if(oScoreboardData[dwId])
+            return oScoreboardData[dwId].ISNPC
+        return -1
+    }
+    
+    if(!updateOScoreboardData())
+        return -1
+    
+    if(oScoreboardData[dwId])
+        return oScoreboardData[dwId].ISNPC
+    return -1
+}
+
+; internal stuff
 updateScoreboardDataEx() {
     
     if(!checkHandles())
@@ -441,6 +610,7 @@ updateScoreboardDataEx() {
     
 }
 
+; internal stuff
 updateOScoreboardData(ex=0) {
     if(!checkHandles())
         return 0
@@ -583,108 +753,53 @@ updateOScoreboardData(ex=0) {
     return 1
 }
 
-getPlayerIdByName(wName) {
-    if(StrLen(wName) < 1 || StrLen(wName) > 24)
+; ##### Player Functions #####
+
+; return HP or -1 on error
+getPlayerHealth() {
+    if(!checkHandles())
         return -1
     
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        For i, o in oScoreboardData
-        {
-            if(InStr(o.NAME,wName)==1)
-                return i
-        }
+    dwCPedPtr := readDWORD(hGTA, ADDR_CPED_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
         return -1
     }
     
-    if(!updateOScoreboardData())
+    dwAddr := dwCPedPtr + ADDR_CPED_HPOFF
+    fHealth := readFloat(hGTA, dwAddr)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
         return -1
-    
-    For i, o in oScoreboardData
-    {
-        if(InStr(o.NAME,wName)==1)
-            return i
     }
-    return -1
+    
+    ErrorLevel := ERROR_OK
+    return Round(fHealth)
 }
 
-getPlayerNameById(dwId) {
-    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
-        return ""
-    
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        if(oScoreboardData[dwId])
-            return oScoreboardData[dwId].NAME
-        return ""
-    }
-    
-    if(!updateOScoreboardData())
-        return ""
-    
-    if(oScoreboardData[dwId])
-        return oScoreboardData[dwId].NAME
-    return ""
-}
-
-getPlayerPingById(dwId) {
-    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
+; return ARMOR or -1 on error
+getPlayerArmor() {
+    if(!checkHandles())
         return -1
-        
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        if(oScoreboardData[dwId])
-            return oScoreboardData[dwId].PING
+    
+    dwCPedPtr := readDWORD(hGTA, ADDR_CPED_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
         return -1
     }
     
-    if(!updateOScoreboardData(1))
-        return -1
-    
-    if(oScoreboardData[dwId])
-        return oScoreboardData[dwId].PING
-    return -1
-}
-
-getPlayerScoreById(dwId) {
-    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
-        return ""
-    
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        if(oScoreboardData[dwId])
-            return oScoreboardData[dwId].SCORE
-        return ""
-    }
-    
-    if(!updateOScoreboardData(1))
-        return ""
-    
-    if(oScoreboardData[dwId])
-        return oScoreboardData[dwId].SCORE
-    return ""
-}
-
-isNPCById(dwId) {
-    if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
-        return -1
-    
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        if(oScoreboardData[dwId])
-            return oScoreboardData[dwId].ISNPC
+    dwAddr := dwCPedPtr + ADDR_CPED_ARMOROFF
+    fHealth := readFloat(hGTA, dwAddr)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
         return -1
     }
     
-    if(!updateOScoreboardData())
-        return -1
-    
-    if(oScoreboardData[dwId])
-        return oScoreboardData[dwId].ISNPC
-    return -1
+    ErrorLevel := ERROR_OK
+    return Round(fHealth)
 }
 
-; ##### Spielerfunktionen #####
+; returns -1 on error or some interior id
 getPlayerInteriorId() {
     if(!checkHandles())
         return -1
@@ -699,102 +814,97 @@ getPlayerInteriorId() {
     return iid
 }
 
+; returns local players money or an empty string on error
 getPlayerMoney() {
     if(!checkHandles())
-        return 0
+        return ""
     
     money := readMem(hGTA, ADDR_CPED_MONEY, 4, "Int")
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return ""
     }
     
     ErrorLevel := ERROR_OK
     return money
 }
 
-getPlayerHealth() {
+; ##### Vehicle Functions #####
+
+; 1  = local player is inside a car
+; 0  = local player is not inside a car
+; -1 = some error
+isPlayerInAnyVehicle()
+{
     if(!checkHandles())
-        return 0.0
+        return -1
     
-    dwCPedPtr := readDWORD(hGTA, ADDR_CPED_PTR)
+    dwVehPtr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0.0
+        return -1
     }
     
-    dwAddr := dwCPedPtr + ADDR_CPED_HPOFF
-    fHealth := readFloat(hGTA, dwAddr)
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return 0.0
-    }
-    
-    ErrorLevel := ERROR_OK
-    return Round(fHealth, 2)
+    return (dwVehPtr > 0)
 }
 
-getPlayerArmor() {
-    if(!checkHandles())
-        return 0.0
-    
-    dwCPedPtr := readDWORD(hGTA, ADDR_CPED_PTR)
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return 0.0
-    }
-    
-    dwAddr := dwCPedPtr + ADDR_CPED_ARMOROFF
-    fHealth := readFloat(hGTA, dwAddr)
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return 0.0
-    }
-    
-    ErrorLevel := ERROR_OK
-    return Round(fHealth, 2)
-}
-
-; ##### Fahrzeugfunktionen #####
-getVehicleModelName() {
-    id:=getVehicleModelId()
-    if(id>400 && id <611)
-    {
-        return ovehicleNames[id-399]
-    }
-    return ""
-}
-
+; 1  = local player is driver
+; 0  = local player is not driver
+; -1 = not inside a car or error
 isPlayerDriver() {
     if(!checkHandles())
-        return 0
+        return -1
     
     dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return -1
     }
     
     if(!dwAddr)
-        return 0
+        return -1
     
     dwCPedPtr := readDWORD(hGTA, ADDR_CPED_PTR)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return -1
     }
     
     dwVal := readDWORD(hGTA, dwAddr + ADDR_VEHICLE_DRIVER)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return -1
     }
     
     ErrorLevel := ERROR_OK
     return (dwVal==dwCPedPtr)
 }
 
-getVehicleType() {              ;1=car, 2=boat, 3=train, 4=motorbike, 5=plane, 6=bike
+; get -1 on error or vehicle health
+getVehicleHealth() {
+    if(!checkHandles())
+        return -1
+    
+    dwVehPtr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return -1
+    }
+    
+    dwAddr := dwVehPtr + ADDR_VEHICLE_HPOFF
+    fHealth := readFloat(hGTA, dwAddr)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return -1
+    }
+    
+    ErrorLevel := ERROR_OK
+    return Round(fHealth)
+}
+
+; 1=car, 2=boat, 3=train, 4=motorbike, 5=plane, 6=bike
+; 0 on error
+getVehicleType() {
     if(!checkHandles())
         return 0
     
@@ -841,6 +951,7 @@ getVehicleType() {              ;1=car, 2=boat, 3=train, 4=motorbike, 5=plane, 6
     return 0
 }
 
+; 0 on error or a vehicle id
 getVehicleModelId() {
     if(!checkHandles())
         return 0
@@ -864,137 +975,203 @@ getVehicleModelId() {
     return sVal
 }
 
+; retuns a vehicle model name or an empty string on error/not inside a car
+getVehicleModelName() {
+    id:=getVehicleModelId()
+    if(id>400 && id <611)
+    {
+        return ovehicleNames[id-399]
+    }
+    return ""
+}
+
+; 1 = Lights on
+; 0 = Lights off
+; -1 = some error/not inside a car
 getVehicleLightState() {
     if(!checkHandles())
-        return 0
+        return -1
     
     dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return -1
     }
     
     if(!dwAddr)
-        return 0
+        return -1
     
     dwVal := readMem(hGTA, dwAddr + ADDR_VEHICLE_LIGHTSTATE, 4, "Int")
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return -1
     }
     
     ErrorLevel := ERROR_OK
     return (dwVal>0)
 }
 
+; 0 = engine not running
+; 1 = engine is runnig
+; -1 = some error/not inside a car
 getVehicleEngineState() {
     if(!checkHandles())
-        return 0
+        return -1
     
     dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return -1
     }
     
     if(!dwAddr)
-        return 0
+        return -1
     
     cVal := readMem(hGTA, dwAddr + ADDR_VEHICLE_ENGINESTATE, 1, "Char")
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return -1
     }
     
     ErrorLevel := ERROR_OK
     return (cVal==24 || cVal==56 || cVal==88 || cVal==120)
 }
 
+; 1  = Vehicle locked
+; 0  = Vehicle not locked
+; -1 = some error/not inside a car
 getVehicleLockState() {
     if(!checkHandles())
-        return 0
+        return -1
     
     dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return -1
     }
     
     if(!dwAddr)
-        return 0
+        return -1
     
     dwVal := readDWORD(hGTA, dwAddr + ADDR_VEHICLE_DOORSTATE)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return -1
     }
     
     ErrorLevel := ERROR_OK
     return (dwVal==2)
 }
 
-isPlayerInAnyVehicle()
-{
-    if(!checkHandles())
-        return 0
-    
-    dwVehPtr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return 0
-    }
-    
-    return (dwVehPtr > 0)
-}
+; ##### Coordinates #####
 
-getVehicleHealth() {
-    if(!checkHandles())
-        return 0.0
-    
-    dwVehPtr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return 0.0
-    }
-    
-    dwAddr := dwVehPtr + ADDR_VEHICLE_HPOFF
-    fHealth := readFloat(hGTA, dwAddr)
-    if(ErrorLevel) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return 0.0
-    }
-    
-    ErrorLevel := ERROR_OK
-    return Round(fHealth, 2)
-}
-
-; ##### Positionsbestimmung #####
+; returns an object which contains local players position
+; returns an empty string on error
+; example:
+; o := getCoordinates()
+; o[1]   //x pos
+; o[2]   //y pos
+; o[3]   //z pos
 getCoordinates() {
     if(!checkHandles())
-        return 0
+        return ""
     
     fX := readFloat(hGTA, ADDR_POSITION_X)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return ""
     }
     
     fY := readFloat(hGTA, ADDR_POSITION_Y)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return ""
     }
     
     fZ := readFloat(hGTA, ADDR_POSITION_Z)
     if(ErrorLevel) {
         ErrorLevel := ERROR_READ_MEMORY
-        return 0
+        return ""
     }
     
     ErrorLevel := ERROR_OK
     return [fX, fY, fZ]
 }
 
+; pass coordinates to get a zone name or get an empty string on error
+calculateZone(posX, posY, posZ) {
+    posX += 0
+    posY += 0
+    posZ += 0
+    
+    if ( !bInitZaC )
+    {
+        initZonesAndCities()
+        bInitZaC := 1
+    }
+        
+    Loop % nZone-1
+    {
+        if (posX >= zone%A_Index%_x1) && (posY >= zone%A_Index%_y1) && (posZ >= zone%A_Index%_z1) && (posX <= zone%A_Index%_x2) && (posY <= zone%A_Index%_y2) && (posZ <= zone%A_Index%_z2)
+        {
+            ErrorLevel := ERROR_OK
+            return zone%A_Index%_name
+        }
+    }
+    
+    ErrorLevel := ERROR_ZONE_NOT_FOUND
+    return ""
+}
+
+; pass coordinates to get a city name or get an empty string on error
+calculateCity(posX, posY, posZ) {
+    posX += 0
+    posY += 0
+    posZ += 0
+    
+    if ( !bInitZaC )
+    {
+        initZonesAndCities()
+        bInitZaC := 1
+    }
+    smallestCity := ""
+    currentCitySize := 0
+    smallestCitySize := 0
+    
+    Loop % nCity-1
+    {
+        if (posX >= city%A_Index%_x1) && (posY >= city%A_Index%_y1) && (posZ >= city%A_Index%_z1) && (posX <= city%A_Index%_x2) && (posY <= city%A_Index%_y2) && (posZ <= city%A_Index%_z2)
+        {
+            currentCitySize := ((city%A_Index%_x2 - city%A_Index%_x1) * (city%A_Index%_y2 - city%A_Index%_y1) * (city%A_Index%_z2 - city%A_Index%_z1))
+            if (!smallestCity) || (currentCitySize < smallestCitySize)
+            {
+                smallestCity := city%A_Index%_name
+                smallestCitySize := currentCitySize
+            }
+        }
+    }
+    
+    if(!smallestCity) {
+        ErrorLevel := ERROR_CITY_NOT_FOUND
+    } else {
+        ErrorLevel := ERROR_OK
+    }
+    return smallestCity
+}
+
+/*
+;buggy
+getCurrentZonecode() {
+    if(!checkHandles())
+        return ""
+    
+    return readString(hGTA, ADDR_ZONECODE, 5)
+}
+*/
+
+;###############  INTERNAL FUNCTIONS
+
+; internal stuff
 initZonesAndCities() {
     if(bInitZaC)
         return
@@ -1388,69 +1565,7 @@ initZonesAndCities() {
     AddZone("Los Santos", 44.615, -2892.970, -242.990, 2997.060, -768.027, 900.000)
 }
 
-calculateZone(posX, posY, posZ) {
-    
-    if ( !bInitZaC )
-    {
-        initZonesAndCities()
-        bInitZaC := 1
-    }
-        
-    Loop % nZone-1
-    {
-        if (posX >= zone%A_Index%_x1) && (posY >= zone%A_Index%_y1) && (posZ >= zone%A_Index%_z1) && (posX <= zone%A_Index%_x2) && (posY <= zone%A_Index%_y2) && (posZ <= zone%A_Index%_z2)
-        {
-            ErrorLevel := ERROR_OK
-            return zone%A_Index%_name
-        }
-    }
-    
-    ErrorLevel := ERROR_ZONE_NOT_FOUND
-    return "Unbekannt"
-}
-
-calculateCity(posX, posY, posZ) {
-    
-    if ( !bInitZaC )
-    {
-        initZonesAndCities()
-        bInitZaC := 1
-    }
-    smallestCity := "Unbekannt"
-    currentCitySize := 0
-    smallestCitySize := 0
-    
-    Loop % nCity-1
-    {
-        if (posX >= city%A_Index%_x1) && (posY >= city%A_Index%_y1) && (posZ >= city%A_Index%_z1) && (posX <= city%A_Index%_x2) && (posY <= city%A_Index%_y2) && (posZ <= city%A_Index%_z2)
-        {
-            currentCitySize := ((city%A_Index%_x2 - city%A_Index%_x1) * (city%A_Index%_y2 - city%A_Index%_y1) * (city%A_Index%_z2 - city%A_Index%_z1))
-            if (smallestCity == "Unbekannt") || (currentCitySize < smallestCitySize)
-            {
-                smallestCity := city%A_Index%_name
-                smallestCitySize := currentCitySize
-            }
-        }
-    }
-    
-    if(smallestCity == "Unbekannt") {
-        ErrorLevel := ERROR_CITY_NOT_FOUND
-    } else {
-        ErrorLevel := ERROR_OK
-    }
-    return smallestCity
-}
-
-/*
-;do not work?
-getCurrentZonecode() {
-    if(!checkHandles())
-        return ""
-    
-    return readString(hGTA, ADDR_ZONECODE, 5)
-}
-*/
-
+; internal stuff
 AddZone(sName, x1, y1, z1, x2, y2, z2) {
     global
     zone%nZone%_name := sName
@@ -1463,6 +1578,7 @@ AddZone(sName, x1, y1, z1, x2, y2, z2) {
     nZone := nZone + 1
 }
 
+; internal stuff
 AddCity(sName, x1, y1, z1, x2, y2, z2) {
     global
     city%nCity%_name := sName
@@ -1475,7 +1591,9 @@ AddCity(sName, x1, y1, z1, x2, y2, z2) {
     nCity := nCity + 1
 }
 
-; ##### Sonstiges #####
+; ##### Memory Stuff #####
+
+; internal stuff
 checkHandles() {
     if(iRefreshHandles+500>A_TickCount)
         return true
@@ -1489,10 +1607,11 @@ checkHandles() {
     return true
 }
 
+; internal stuff
 refreshGTA() {
     newPID := getPID("GTA:SA:MP")
-    if(!newPID) {                            ; GTA nicht gefunden
-        if(hGTA) {                            ; Handle offen
+    if(!newPID) {                            ; GTA not found
+        if(hGTA) {                            ; open handle
             virtualFreeEx(hGTA, pMemory, 0, 0x8000)
             closeProcess(hGTA)
             hGTA := 0x0
@@ -1504,9 +1623,9 @@ refreshGTA() {
         return false
     }
     
-    if(!hGTA || (dwGTAPID != newPID)) {        ; PID geändert / Handle geschlossen
+    if(!hGTA || (dwGTAPID != newPID)) {        ; changed PID, closed handle
         hGTA := openProcess(newPID)
-        if(ErrorLevel) {                    ; openProcess fehlgeschlagen
+        if(ErrorLevel) {                    ; openProcess fail
             dwGTAPID := 0
             hGTA := 0x0
             dwSAMP := 0x0
@@ -1521,6 +1640,7 @@ refreshGTA() {
     return true
 }
 
+; internal stuff
 refreshSAMP() {
     if(dwSAMP)
         return true
@@ -1532,6 +1652,7 @@ refreshSAMP() {
     return true
 }
 
+; internal stuff
 refreshMemory() {
     if(!pMemory) {
         pMemory     := virtualAllocEx(hGTA, 4096, 0x1000 | 0x2000, 0x40)
@@ -1547,13 +1668,14 @@ refreshMemory() {
     return true
 }
 
-; ##### Speicherfunktionen #####
+; internal stuff
 getPID(szWindow) {
     local dwPID := 0
     WinGet, dwPID, PID, %szWindow%
     return dwPID
 }
 
+; internal stuff
 openProcess(dwPID, dwRights = 0x1F0FFF) {
     hProcess := DllCall("OpenProcess"
                         , "UInt", dwRights
@@ -1569,6 +1691,7 @@ openProcess(dwPID, dwRights = 0x1F0FFF) {
     return hProcess
 }
 
+; internal stuff
 closeProcess(hProcess) {
     if(hProcess == 0) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1581,6 +1704,7 @@ closeProcess(hProcess) {
     ErrorLevel := ERROR_OK
 }
 
+; internal stuff
 getModuleBaseAddress(sModule, hProcess) {
     if(!sModule) {
         ErrorLevel := ERROR_MODULE_NOT_FOUND
@@ -1629,6 +1753,7 @@ getModuleBaseAddress(sModule, hProcess) {
     return 0
 }
 
+; internal stuff
 readString(hProcess, dwAddress, dwLen) {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1654,6 +1779,7 @@ readString(hProcess, dwAddress, dwLen) {
     return sRead
 }
 
+; internal stuff
 readFloat(hProcess, dwAddress) {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1677,6 +1803,7 @@ readFloat(hProcess, dwAddress) {
     return NumGet(dwRead, 0, "Float")
 }
 
+; internal stuff
 readDWORD(hProcess, dwAddress) {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1699,28 +1826,7 @@ readDWORD(hProcess, dwAddress) {
     return NumGet(dwRead, 0, "UInt")
 }
 
-readWORD(hProcess, dwAddress) {
-    if(!hProcess) {
-        ErrorLevel := ERROR_INVALID_HANDLE
-        return 0
-    }
-    
-    VarSetCapacity(wRead, 2)
-    dwRet := DllCall(    "ReadProcessMemory"
-                        , "UInt",  hProcess
-                        , "UInt",  dwAddress
-                        , "Str",   wRead
-                        , "UInt",  2
-                        , "UInt*", 0)
-    if(dwRet == 0) {
-        ErrorLevel := ERROR_READ_MEMORY
-        return 0
-    }
-    
-    ErrorLevel := ERROR_OK
-    return NumGet(wRead, 0, "UShort")
-}
-
+; internal stuff
 readMem(hProcess, dwAddress, dwLen=4, type="UInt") {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1743,6 +1849,7 @@ readMem(hProcess, dwAddress, dwLen=4, type="UInt") {
     return NumGet(dwRead, 0, type)
 }
 
+; internal stuff
 writeString(hProcess, dwAddress, wString) {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1769,6 +1876,7 @@ writeString(hProcess, dwAddress, wString) {
     return true
 }
 
+; internal stuff
 writeRaw(hProcess, dwAddress, pBuffer, dwLen) {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1791,6 +1899,7 @@ writeRaw(hProcess, dwAddress, pBuffer, dwLen) {
     return true
 }
 
+; internal stuff
 callWithParams(hProcess, dwFunc, aParams, bCleanupStack = true) {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1860,6 +1969,7 @@ callWithParams(hProcess, dwFunc, aParams, bCleanupStack = true) {
     return true
 }
 
+; internal stuff
 virtualAllocEx(hProcess, dwSize, flAllocationType, flProtect) {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1882,6 +1992,7 @@ virtualAllocEx(hProcess, dwSize, flAllocationType, flProtect) {
     return dwRet
 }
 
+; internal stuff
 virtualFreeEx(hProcess, lpAddress, dwSize, dwFreeType) {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1903,6 +2014,7 @@ virtualFreeEx(hProcess, lpAddress, dwSize, dwFreeType) {
     return dwRet
 }
 
+; internal stuff
 createRemoteThread(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId) {
     if(!hProcess) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1927,6 +2039,7 @@ createRemoteThread(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lp
     return dwRet
 }
 
+; internal stuff
 waitForSingleObject(hThread, dwMilliseconds) {
     if(!hThread) {
         ErrorLevel := ERROR_INVALID_HANDLE
@@ -1946,6 +2059,7 @@ waitForSingleObject(hThread, dwMilliseconds) {
     return dwRet
 }
 
+; internal stuff
 __ansiToUnicode(sString, nLen = 0) {
    If !nLen
    {
@@ -1971,6 +2085,7 @@ __ansiToUnicode(sString, nLen = 0) {
     return wString
 }
 
+; internal stuff
 __unicodeToAnsi(wString, nLen = 0) {
    pString := wString + 1 > 65536 ? wString : &wString
 

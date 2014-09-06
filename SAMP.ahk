@@ -1,10 +1,6 @@
-﻿; #### SAMP UDF R9 ####
+﻿; #### SAMP UDF R10 ####
 ; SAMP Version: 0.3z R1
-; Creator: FrozenBrain
-; https://github.com/FrozenBrain/
-; Modified by: paul-phoenix
 ; https://github.com/paul-phoenix
-; Do not remove these lines.
 ; ####################
 
 
@@ -42,9 +38,11 @@ global ADDR_VEHICLE_ENGINESTATE        := 0x428
 global ADDR_VEHICLE_LIGHTSTATE         := 0x428
 global ADDR_VEHICLE_MODEL              := 0x22
 global ADDR_VEHICLE_TYPE               := 0x590
+global ADDR_VEHICLE_DRIVER             := 0x460
 
 global oAirplaneModels                 := [417, 425, 447, 460, 469, 476, 487, 488, 497, 511, 512, 513, 519, 520, 548, 553, 563, 577, 592, 593]
 global oBikeModels                     := [481,509,510]
+global ovehicleNames                   := ["Landstalker","Bravura","Buffalo","Linerunner","Perrenial","Sentinel","Dumper","Firetruck","Trashmaster","Stretch","Manana","Infernus","Voodoo","Pony","Mule","Cheetah","Ambulance","Leviathan","Moonbeam","Esperanto","Taxi","Washington","Bobcat","Whoopee","BFInjection","Hunter","Premier","Enforcer","Securicar","Banshee","Predator","Bus","Rhino","Barracks","Hotknife","Trailer","Previon","Coach","Cabbie","Stallion","Rumpo","RCBandit","Romero","Packer","Monster","Admiral","Squalo","Seasparrow","Pizzaboy","Tram","Trailer","Turismo","Speeder","Reefer","Tropic","Flatbed","Yankee","Caddy","Solair","Berkley'sRCVan","Skimmer","PCJ-600","Faggio","Freeway","RCBaron","RCRaider","Glendale","Oceanic","Sanchez","Sparrow","Patriot","Quad","Coastguard","Dinghy","Hermes","Sabre","Rustler","ZR-350","Walton","Regina","Comet","BMX","Burrito","Camper","Marquis","Baggage","Dozer","Maverick","NewsChopper","Rancher","FBIRancher","Virgo","Greenwood","Jetmax","Hotring","Sandking","BlistaCompact","PoliceMaverick","Boxvillde","Benson","Mesa","RCGoblin","HotringRacerA","HotringRacerB","BloodringBanger","Rancher","SuperGT","Elegant","Journey","Bike","MountainBike","Beagle","Cropduster","Stunt","Tanker","Roadtrain","Nebula","Majestic","Buccaneer","Shamal","hydra","FCR-900","NRG-500","HPV1000","CementTruck","TowTruck","Fortune","Cadrona","FBITruck","Willard","Forklift","Tractor","Combine","Feltzer","Remington","Slamvan","Blade","Freight","Streak","Vortex","Vincent","Bullet","Clover","Sadler","Firetruck","Hustler","Intruder","Primo","Cargobob","Tampa","Sunrise","Merit","Utility","Nevada","Yosemite","Windsor","Monster","Monster","Uranus","Jester","Sultan","Stratum","Elegy","Raindance","RCTiger","Flash","Tahoma","Savanna","Bandito","FreightFlat","StreakCarriage","Kart","Mower","Dune","Sweeper","Broadway","Tornado","AT-400","DFT-30","Huntley","Stafford","BF-400","NewsVan","Tug","Trailer","Emperor","Wayfarer","Euros","Hotdog","Club","FreightBox","Trailer","Andromada","Dodo","RCCam","Launch","PoliceCar","PoliceCar","PoliceCar","PoliceRanger","Picador","S.W.A.T","Alpha","Phoenix","GlendaleShit","SadlerShit","Luggage","Luggage","Stairs","Boxville","Tiller","UtilityTrailer"]
 
 ; SAMP Adressen
 global ADDR_SAMP_INCHAT_PTR            := 0x212A94
@@ -78,7 +76,7 @@ global SAMP_IPING_OFFSET                    := 0xC
 global SAMP_ISCORE_OFFSET                   := 0x4
 global SAMP_ISNPC_OFFSET                    := 0x0
 
-global SAMP_PLAYER_MAX						:= 1004
+global SAMP_PLAYER_MAX                      := 1004
 
 ; Größen
 global SIZE_SAMP_CHATMSG               := 0xFC
@@ -217,8 +215,8 @@ getUsername() {
 }
 
 getId() {
-	s:=getUsername()
-	return getPlayerIdByName(s)
+    s:=getUsername()
+    return getPlayerIdByName(s)
 }
 
 sendChatMessage(wText) {
@@ -545,8 +543,8 @@ updateOScoreboardData(ex=0) {
             ErrorLevel := ERROR_READ_MEMORY
             return 0
         }
-		
-		dwIsNPC := readMem(hGTA, dwRemoteplayer + SAMP_ISNPC_OFFSET, 4, "Int")
+        
+        dwIsNPC := readMem(hGTA, dwRemoteplayer + SAMP_ISNPC_OFFSET, 4, "Int")
         if(ErrorLevel) {
             ErrorLevel := ERROR_READ_MEMORY
             return 0
@@ -756,7 +754,46 @@ getPlayerArmor() {
     ErrorLevel := ERROR_OK
     return Round(fHealth, 2)
 }
+
 ; ##### Fahrzeugfunktionen #####
+getModelName() {
+    id:=getVehicleModelId()
+    if(id>400 && id <611)
+    {
+        return ovehicleNames[id-399]
+    }
+    return ""
+}
+
+isPlayerDriver() {
+    if(!checkHandles())
+        return 0
+    
+    dwAddr := readDWORD(hGTA, ADDR_VEHICLE_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    if(!dwAddr)
+        return 0
+    
+    dwCPedPtr := readDWORD(hGTA, ADDR_CPED_PTR)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    dwVal := readDWORD(hGTA, dwAddr + ADDR_VEHICLE_DRIVER)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return 0
+    }
+    
+    ErrorLevel := ERROR_OK
+    return (dwVal==dwCPedPtr)
+}
+
 getVehicleType() {              ;1=car, 2=boat, 3=train, 4=motorbike, 5=plane, 6=bike
     if(!checkHandles())
         return 0
@@ -870,7 +907,7 @@ getVehicleEngineState() {
     }
     
     ErrorLevel := ERROR_OK
-    return (cVal==24 || cVal==88)
+    return (cVal==24 || cVal==56 || cVal==88 || cVal==120)
 }
 
 getVehicleLockState() {

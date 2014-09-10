@@ -19,6 +19,8 @@ Functions:
     ; #                   wInfo, wButton1)                                                                                #
     ; #     - playAudioStream(wUrl)                     play an "audio stream"                                            #
     ; #     - stopAudioStream()                         stopp an audio stream                                             #
+    ; #     - blockChatInput()                          call this func to block chat messages to server                   #
+    ; #     - unBlockChatInput()                        call this func to unblock chat messages to server                 #
     ; # ----------------------------------------------------------------------------------------------------------------- #
     ; #     - patchRadio()                              (internal stuff)                                                  #
     ; #     - unPatchRadio()                            (internal stuff)                                                  #

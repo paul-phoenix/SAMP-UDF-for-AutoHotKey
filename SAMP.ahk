@@ -110,6 +110,8 @@ global iUpdateTick                     := 2500      ;time in ms, used for getPla
 ; #                   wInfo, wButton1)                                                                                #
 ; #     - playAudioStream(wUrl)                     play an "audio stream"                                            #
 ; #     - stopAudioStream()                         stopp an audio stream                                             #
+; #     - blockChatInput()                          call this func to block chat messages to server                   #
+; #     - unBlockChatInput()                        call this func to unblock chat messages to server                 #
 ; # ----------------------------------------------------------------------------------------------------------------- #
 ; #     - patchRadio()                              (internal stuff)                                                  #
 ; #     - unPatchRadio()                            (internal stuff)                                                  #
@@ -271,9 +273,9 @@ addMessageToChatWindow(wText) {
 }
 
 ; similar to: http://wiki.sa-mp.com/wiki/GameTextForPlayer
-; wText	The text to be displayed.
-; dwTime	The duration of the text being shown in milliseconds.
-; dwStyle	The style of text to be displayed.
+; wText    The text to be displayed.
+; dwTime   The duration of the text being shown in milliseconds.
+; dwStyle  The style of text to be displayed.
 showGameText(wText, dwTime, dwSize) {
     wText := "" wText
     dwTime += 0
@@ -293,10 +295,10 @@ showGameText(wText, dwTime, dwSize) {
 }
 
 ; similar to: http://wiki.sa-mp.com/wiki/ShowPlayerDialog
-; dwStyle	The style of the dialog.
-; wCaption	The title at the top of the dialog. The length of the caption can not exceed more than 64 characters before it starts to cut off.
-; wInfo	The text to display in the main dialog. Use \n to start a new line and \t to tabulate.
-; wButton1	The text on the left button.
+; dwStyle   The style of the dialog.
+; wCaption  The title at the top of the dialog. The length of the caption can not exceed more than 64 characters before it starts to cut off.
+; wInfo     The text to display in the main dialog. Use \n to start a new line and \t to tabulate.
+; wButton1  The text on the left button.
 showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
     dwStyle += 0
     dwStyle := Floor(dwStyle)
@@ -406,27 +408,8 @@ stopAudioStream() {
     return true
 }
 
-; needed for audio stream
-patchRadio()
-{
-    if(!checkHandles())
-        return false
-    
-    VarSetCapacity(nop, 4, 0)
-    NumPut(0x90909090,nop,0,"UInt")
-    
-    dwFunc := dwSAMP + FUNC_SAMP_PLAYAUDIOSTR
-    writeRaw(hGTA, dwFunc, &nop, 4)
-    writeRaw(hGTA, dwFunc+4, &nop, 1)
-    
-    dwFunc := dwSAMP + FUNC_SAMP_STOPAUDIOSTR
-    writeRaw(hGTA, dwFunc, &nop, 4)
-    writeRaw(hGTA, dwFunc+4, &nop, 1)
-    return true
-}
-
-blockChatInput()
-{
+; call this func to block chat messages to server
+blockChatInput() {
     if(!checkHandles())
         return false
     
@@ -442,8 +425,8 @@ blockChatInput()
     return true
 }
 
-unBlockChatInput()
-{
+; call this func to unblock chat messages to server
+unBlockChatInput() {
     if(!checkHandles())
         return false
     
@@ -460,8 +443,25 @@ unBlockChatInput()
 }
 
 ; needed for audio stream
-unPatchRadio()
-{
+patchRadio() {
+    if(!checkHandles())
+        return false
+    
+    VarSetCapacity(nop, 4, 0)
+    NumPut(0x90909090,nop,0,"UInt")
+    
+    dwFunc := dwSAMP + FUNC_SAMP_PLAYAUDIOSTR
+    writeRaw(hGTA, dwFunc, &nop, 4)
+    writeRaw(hGTA, dwFunc+4, &nop, 1)
+    
+    dwFunc := dwSAMP + FUNC_SAMP_STOPAUDIOSTR
+    writeRaw(hGTA, dwFunc, &nop, 4)
+    writeRaw(hGTA, dwFunc+4, &nop, 1)
+    return true
+}
+
+; needed for audio stream
+unPatchRadio() {
     if(!checkHandles())
         return false
     
@@ -865,8 +865,8 @@ getPlayerMoney() {
 
 ; ##### Vehicle Functions #####
 
-; 1  = local player is inside a car
-; 0  = local player is not inside a car
+; 1  = local player is inside a vehicle
+; 0  = local player is not inside a vehicle
 ; -1 = some error
 isPlayerInAnyVehicle()
 {

@@ -8,6 +8,8 @@ SetWorkingDir %A_ScriptDir%
 
 Hotkey, Enter, Off
 Hotkey, Escape, Off
+
+bchat:=0
 return
 
 +T:: 
@@ -102,4 +104,13 @@ addMessageToChatWindow("{FFFFFF}Is Driver:" isPlayerDriver())
 addMessageToChatWindow("{FFFFFF}Light State:" getVehicleLightState())
 addMessageToChatWindow("{FFFFFF}Engine State:" getVehicleEngineState())
 addMessageToChatWindow("{FFFFFF}Door State:" getVehicleLockState())
+return
+
+Numpad8::
+addMessageToChatWindow("{FFFFFF}block chat " (bchat ? "{FF0000}off" : "{00FF00}on"))
+if(bchat)
+	unBlockChatInput()
+else
+	blockChatInput()
+bchat:=!bchat
 return

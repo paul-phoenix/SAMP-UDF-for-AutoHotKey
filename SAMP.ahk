@@ -425,6 +425,40 @@ patchRadio()
     return true
 }
 
+blockChatInput()
+{
+    if(!checkHandles())
+        return false
+    
+    VarSetCapacity(nop, 2, 0)
+    
+    dwFunc := dwSAMP + FUNC_SAMP_SENDSAY
+    NumPut(0x04C2,nop,0,"Short")
+    writeRaw(hGTA, dwFunc, &nop, 2)
+    
+    dwFunc := dwSAMP + FUNC_SAMP_SENDCMD
+    writeRaw(hGTA, dwFunc, &nop, 2)
+    
+    return true
+}
+
+unBlockChatInput()
+{
+    if(!checkHandles())
+        return false
+    
+    VarSetCapacity(nop, 2, 0)
+    
+    dwFunc := dwSAMP + FUNC_SAMP_SENDSAY
+    NumPut(0xA164,nop,0,"Short")
+    writeRaw(hGTA, dwFunc, &nop, 2)
+    
+    dwFunc := dwSAMP + FUNC_SAMP_SENDCMD
+    writeRaw(hGTA, dwFunc, &nop, 2)
+    
+    return true
+}
+
 ; needed for audio stream
 unPatchRadio()
 {

@@ -1,5 +1,5 @@
-﻿; #### SAMP UDF R10 ####
-; SAMP Version: 0.3z R1
+﻿; #### SAMP UDF ####
+; SAMP Version: 0.3.7 R1
 ; https://github.com/paul-phoenix
 ; ####################
 

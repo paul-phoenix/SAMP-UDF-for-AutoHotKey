@@ -92,4 +92,5 @@ Functions:
 *COMPILE*
 
 -get Autohotkey at ahkscript.org
+
 -compile script with ANSI/UNICODE32

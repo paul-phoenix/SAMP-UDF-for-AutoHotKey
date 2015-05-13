@@ -45,36 +45,36 @@ global oBikeModels                     := [481,509,510]
 global ovehicleNames                   := ["Landstalker","Bravura","Buffalo","Linerunner","Perrenial","Sentinel","Dumper","Firetruck","Trashmaster","Stretch","Manana","Infernus","Voodoo","Pony","Mule","Cheetah","Ambulance","Leviathan","Moonbeam","Esperanto","Taxi","Washington","Bobcat","Whoopee","BFInjection","Hunter","Premier","Enforcer","Securicar","Banshee","Predator","Bus","Rhino","Barracks","Hotknife","Trailer","Previon","Coach","Cabbie","Stallion","Rumpo","RCBandit","Romero","Packer","Monster","Admiral","Squalo","Seasparrow","Pizzaboy","Tram","Trailer","Turismo","Speeder","Reefer","Tropic","Flatbed","Yankee","Caddy","Solair","Berkley'sRCVan","Skimmer","PCJ-600","Faggio","Freeway","RCBaron","RCRaider","Glendale","Oceanic","Sanchez","Sparrow","Patriot","Quad","Coastguard","Dinghy","Hermes","Sabre","Rustler","ZR-350","Walton","Regina","Comet","BMX","Burrito","Camper","Marquis","Baggage","Dozer","Maverick","NewsChopper","Rancher","FBIRancher","Virgo","Greenwood","Jetmax","Hotring","Sandking","BlistaCompact","PoliceMaverick","Boxvillde","Benson","Mesa","RCGoblin","HotringRacerA","HotringRacerB","BloodringBanger","Rancher","SuperGT","Elegant","Journey","Bike","MountainBike","Beagle","Cropduster","Stunt","Tanker","Roadtrain","Nebula","Majestic","Buccaneer","Shamal","hydra","FCR-900","NRG-500","HPV1000","CementTruck","TowTruck","Fortune","Cadrona","FBITruck","Willard","Forklift","Tractor","Combine","Feltzer","Remington","Slamvan","Blade","Freight","Streak","Vortex","Vincent","Bullet","Clover","Sadler","Firetruck","Hustler","Intruder","Primo","Cargobob","Tampa","Sunrise","Merit","Utility","Nevada","Yosemite","Windsor","Monster","Monster","Uranus","Jester","Sultan","Stratum","Elegy","Raindance","RCTiger","Flash","Tahoma","Savanna","Bandito","FreightFlat","StreakCarriage","Kart","Mower","Dune","Sweeper","Broadway","Tornado","AT-400","DFT-30","Huntley","Stafford","BF-400","NewsVan","Tug","Trailer","Emperor","Wayfarer","Euros","Hotdog","Club","FreightBox","Trailer","Andromada","Dodo","RCCam","Launch","PoliceCar","PoliceCar","PoliceCar","PoliceRanger","Picador","S.W.A.T","Alpha","Phoenix","GlendaleShit","SadlerShit","Luggage","Luggage","Stairs","Boxville","Tiller","UtilityTrailer"]
 
 ; SAMP Addresses
-global ADDR_SAMP_INCHAT_PTR            := 0x212A94
+global ADDR_SAMP_INCHAT_PTR            := 0x21A10C
 global ADDR_SAMP_INCHAT_PTR_OFF        := 0x55
-global ADDR_SAMP_USERNAME              := 0x2123F7
-global ADDR_SAMP_CHATMSG_PTR           := 0x212A6C
-global ADDR_SAMP_SHOWDLG_PTR           := 0x212A40
-global FUNC_SAMP_SENDCMD               := 0x7BDD0
-global FUNC_SAMP_SENDSAY               := 0x4CA0
-global FUNC_SAMP_ADDTOCHATWND          := 0x7AA00
-global FUNC_SAMP_SHOWGAMETEXT          := 0x643B0
-global FUNC_SAMP_PLAYAUDIOSTR          := 0x79300
-global FUNC_SAMP_STOPAUDIOSTR          := 0x78F00
-global FUNC_SAMP_SHOWDIALOG            := 0x816F0
-global FUNC_UPDATESCOREBOARD           := 0x7D10
+global ADDR_SAMP_USERNAME              := 0x219A6F
+global ADDR_SAMP_CHATMSG_PTR           := 0x21A0E4
+global ADDR_SAMP_SHOWDLG_PTR           := 0x21A0B8
+global FUNC_SAMP_SENDCMD               := 0x65C60
+global FUNC_SAMP_SENDSAY               := 0x57F0
+global FUNC_SAMP_ADDTOCHATWND          := 0x64520
+global FUNC_SAMP_SHOWGAMETEXT          := 0x9C2C0
+global FUNC_SAMP_PLAYAUDIOSTR          := 0x62DA0
+global FUNC_SAMP_STOPAUDIOSTR          := 0x629A0
+global FUNC_SAMP_SHOWDIALOG            := 0x6B9C0
+global FUNC_UPDATESCOREBOARD           := 0x8A10
 
-global SAMP_INFO_OFFSET                     := 0x212A80
-global SAMP_PPOOLS_OFFSET                   := 0x3D9
-global SAMP_PPOOL_PLAYER_OFFSET             := 0x14
+global SAMP_INFO_OFFSET                     := 0x21A0F8
+global SAMP_PPOOLS_OFFSET                   := 0x3CD
+global SAMP_PPOOL_PLAYER_OFFSET             := 0x18
 global SAMP_SLOCALPLAYERID_OFFSET           := 0x4
 global SAMP_ISTRLEN_LOCALPLAYERNAME_OFFSET  := 0x1A
 global SAMP_SZLOCALPLAYERNAME_OFFSET        := 0xA
 global SAMP_PSZLOCALPLAYERNAME_OFFSET       := 0xA
 global SAMP_PREMOTEPLAYER_OFFSET            := 0x2E
-global SAMP_ISTRLENNAME___OFFSET            := 0x24
-global SAMP_SZPLAYERNAME_OFFSET             := 0x14
-global SAMP_PSZPLAYERNAME_OFFSET            := 0x14
+global SAMP_ISTRLENNAME___OFFSET            := 0x1C
+global SAMP_SZPLAYERNAME_OFFSET             := 0xC
+global SAMP_PSZPLAYERNAME_OFFSET            := 0xC
 global SAMP_ILOCALPLAYERPING_OFFSET         := 0x26
 global SAMP_ILOCALPLAYERSCORE_OFFSET        := 0x2A
-global SAMP_IPING_OFFSET                    := 0xC
-global SAMP_ISCORE_OFFSET                   := 0x4
-global SAMP_ISNPC_OFFSET                    := 0x0
+global SAMP_IPING_OFFSET                    := 0x28
+global SAMP_ISCORE_OFFSET                   := 0x24
+global SAMP_ISNPC_OFFSET                    := 0x4
 
 global SAMP_PLAYER_MAX                      := 1004
 
@@ -123,7 +123,7 @@ global iUpdateTick                     := 2500      ;time in ms, used for getPla
 ; #     - isNPCById(dwId)                           check if player is a NPC                                          #
 ; # ----------------------------------------------------------------------------------------------------------------- #
 ; #     - updateScoreboardDataEx()                  (internal stuff)                                                  #
-; #     - updateOScoreboardData(ex=0)               (internal stuff)                                                  #
+; #     - updateOScoreboardData()               (internal stuff)                                                  #
 ; #####################################################################################################################
 ; # Player Functions :                                                                                                #
 ; #     - getPlayerHealth()                         get HP                                                            #
@@ -509,7 +509,7 @@ getPlayerNameById(dwId) {
 ; returns -1 on error
 getPlayerIdByName(wName) {
     wName := "" wName
-    if(StrLen(wName) < 1 || StrLen(wName) > 24)
+    if(StrLen(wName) < 1 || StrLen(wName) > 20)
         return -1
     
     if(iRefreshScoreboard+iUpdateTick > A_TickCount)
@@ -548,7 +548,7 @@ getPlayerScoreById(dwId) {
         return ""
     }
     
-    if(!updateOScoreboardData(1))
+    if(!updateOScoreboardData())
         return ""
     
     if(oScoreboardData[dwId])
@@ -571,7 +571,7 @@ getPlayerPingById(dwId) {
         return -1
     }
     
-    if(!updateOScoreboardData(1))
+    if(!updateOScoreboardData())
         return -1
     
     if(oScoreboardData[dwId])
@@ -645,18 +645,15 @@ updateScoreboardDataEx() {
 }
 
 ; internal stuff
-updateOScoreboardData(ex=0) {
+updateOScoreboardData() {
     if(!checkHandles())
         return 0
     
     oScoreboardData := []
     
-    if(ex && iRefreshScoreboard+5000 < A_TickCount)
-    {
-        if(!updateScoreboardDataEx())
-            return 0
-    }
-    
+    if(!updateScoreboardDataEx())
+        return 0
+
     iRefreshScoreboard := A_TickCount
     
     dwAddress := readDWORD(hGTA, dwSAMP + SAMP_INFO_OFFSET)

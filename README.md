@@ -1,6 +1,6 @@
 ﻿SAMP UDF for AutoHotKey
 =======================
-Version R10
+Version 0.3.7 R1
 ----------
 This collection of functions allows to access native GTA/SAMP functions.
 You can create useful scripts to automate repeating tasks.

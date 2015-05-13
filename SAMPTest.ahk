@@ -114,3 +114,4 @@ else
 	blockChatInput()
 bchat:=!bchat
 return
+

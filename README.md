@@ -32,7 +32,7 @@ Functions:
     ; #     - isNPCById(dwId)                           check if player is a NPC                                          #
     ; # ----------------------------------------------------------------------------------------------------------------- #
     ; #     - updateScoreboardDataEx()                  (internal stuff)                                                  #
-    ; #     - updateOScoreboardData(ex=0)               (internal stuff)                                                  #
+    ; #     - updateOScoreboardData()               (internal stuff)                                                  #
     ; #####################################################################################################################
     ; # Player Functions :                                                                                                #
     ; #     - getPlayerHealth()                         get HP                                                            #

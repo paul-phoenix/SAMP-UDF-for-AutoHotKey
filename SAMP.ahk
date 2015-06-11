@@ -123,9 +123,11 @@ global iUpdateTick                     := 2500      ;time in ms, used for getPla
 ; #     - getPlayerScoreById(dwId)                  get some player's score                                           #
 ; #     - getPlayerPingById(dwId)                   get some player's ping                                            #
 ; #     - isNPCById(dwId)                           check if player is a NPC                                          #
+; #     - getIP()                                   get server ip                                                     #
+; #     - getHostname()                             get server hostname                                               #
 ; # ----------------------------------------------------------------------------------------------------------------- #
 ; #     - updateScoreboardDataEx()                  (internal stuff)                                                  #
-; #     - updateOScoreboardData()               (internal stuff)                                                  #
+; #     - updateOScoreboardData()                   (internal stuff)                                                  #
 ; #####################################################################################################################
 ; # Player Functions :                                                                                                #
 ; #     - getPlayerHealth()                         get HP                                                            #

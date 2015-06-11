@@ -35,7 +35,7 @@ global ADDR_CPED_MONEY                 := 0xB7CE50
 global ADDR_CPED_INTID                 := 0xA4ACE8
 global ADDR_VEHICLE_DOORSTATE          := 0x4F8
 global ADDR_VEHICLE_ENGINESTATE        := 0x428
-global ADDR_VEHICLE_LIGHTSTATE         := 0x428
+global ADDR_VEHICLE_LIGHTSTATE         := 0x584
 global ADDR_VEHICLE_MODEL              := 0x22
 global ADDR_VEHICLE_TYPE               := 0x590
 global ADDR_VEHICLE_DRIVER             := 0x460
@@ -75,6 +75,8 @@ global SAMP_ILOCALPLAYERSCORE_OFFSET        := 0x2A
 global SAMP_IPING_OFFSET                    := 0x28
 global SAMP_ISCORE_OFFSET                   := 0x24
 global SAMP_ISNPC_OFFSET                    := 0x4
+global SAMP_SZIP_OFFSET                     := 0x20
+global SAMP_SZHOSTNAME_OFFSET               := 0x121
 
 global SAMP_PLAYER_MAX                      := 1004
 
@@ -602,6 +604,46 @@ isNPCById(dwId) {
     if(oScoreboardData[dwId])
         return oScoreboardData[dwId].ISNPC
     return -1
+}
+
+; returns server ip or empty string on error
+getIP() {
+    if(!checkHandles())
+        return ""
+    
+    dwAddress := readDWORD(hGTA, dwSAMP + SAMP_INFO_OFFSET)
+    if(ErrorLevel || dwAddress==0) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return ""
+    }
+    
+    ipaddr := readString(hGTA, dwAddress+SAMP_SZIP_OFFSET, 257)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return ""
+    }
+    
+    return ipaddr
+}
+
+; returns server hostname or empty string on error
+getHostname() {
+    if(!checkHandles())
+        return ""
+    
+    dwAddress := readDWORD(hGTA, dwSAMP + SAMP_INFO_OFFSET)
+    if(ErrorLevel || dwAddress==0) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return ""
+    }
+    
+    hostname := readString(hGTA, dwAddress+SAMP_SZHOSTNAME_OFFSET, 259)
+    if(ErrorLevel) {
+        ErrorLevel := ERROR_READ_MEMORY
+        return ""
+    }
+    
+    return hostname
 }
 
 ; internal stuff

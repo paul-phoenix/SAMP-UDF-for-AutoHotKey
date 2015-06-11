@@ -79,6 +79,7 @@ return
 Numpad5::
 if ( isInChat() )
 	return
+addMessageToChatWindow("{FFFFFF}IP: {FF0000}" getIP() "{FFFFFF}, Hostname: {FF0000}" getHostname())
 addMessageToChatWindow("{FFFFFF}Name: {FF0000}" getUsername())
 addMessageToChatWindow("{FFFFFF}HP: {FF0000}" getPlayerHealth() "{FFFFFF}, ARMOR: {FF0000}" getPlayerArmor())
 addMessageToChatWindow("{FFFFFF}Money: {FF0000}" getPlayerMoney())

@@ -91,6 +91,8 @@ global pMemory                         := 0x0
 global pParam1                         := 0x0
 global pParam2                         := 0x0
 global pParam3                         := 0x0
+global pParam4                         := 0x0
+global pParam5                         := 0x0
 global pInjectFunc                     := 0x0
 global nZone                           := 1
 global nCity                           := 1
@@ -309,6 +311,9 @@ showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
     wCaption := "" wCaption
     wInfo := "" wInfo
     wButton1 := "" wButton1
+    
+    if(dwStyle<0 || dwStyle>5 || StrLen(wCaption)>=64 || StrLen(wInfo)>=4096 || StrLen(wButton1)>10)
+        return false
 
     if(!checkHandles())
         return false
@@ -322,13 +327,13 @@ showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
         return false
     }
     
-    writeString(hGTA, pParam1, wCaption)
+    writeString(hGTA, pParam5, wCaption)
     if(ErrorLevel)
         return false
-    writeString(hGTA, pParam2, wInfo)
+    writeString(hGTA, pParam1, wInfo)
     if(ErrorLevel)
         return false
-    writeString(hGTA, pParam3, wButton1)
+    writeString(hGTA, pParam5+512, wButton1)
     if(ErrorLevel)
         return false
     
@@ -343,13 +348,13 @@ showDialog(dwStyle, wCaption, wInfo, wButton1 ) {
     NumPut(0x68, injectData, 5, "UChar")        ;5 + 1        ;push 0
     NumPut(0, injectData, 6, "UInt")            ;6 + 4
     NumPut(0x68, injectData, 10, "UChar")        ;10 + 1        ;push 0
-    NumPut(pParam1+StrLen(wCaption), injectData, 11, "UInt")            ;11 + 4
+    NumPut(pParam5+StrLen(wCaption), injectData, 11, "UInt")            ;11 + 4
     NumPut(0x68, injectData, 15, "UChar")        ;15 + 1        ;push button1
-    NumPut(pParam3, injectData, 16, "UInt")        ;16 + 4
+    NumPut(pParam5+512, injectData, 16, "UInt")        ;16 + 4
     NumPut(0x68, injectData, 20, "UChar")        ;20 + 1        ;push info
-    NumPut(pParam2, injectData, 21, "UInt")        ;21 + 4
+    NumPut(pParam1, injectData, 21, "UInt")        ;21 + 4
     NumPut(0x68, injectData, 25, "UChar")        ;25 + 1        ;push caption
-    NumPut(pParam1, injectData, 26, "UInt")        ;26 + 4
+    NumPut(pParam5, injectData, 26, "UInt")        ;26 + 4
     NumPut(0x68, injectData, 30, "UChar")        ;30 + 1        ;push style
     NumPut(dwStyle, injectData, 31, "UInt")        ;31 + 4
     NumPut(0x68, injectData, 35, "UChar")        ;35 + 1        ;push 1
@@ -1730,7 +1735,7 @@ refreshSAMP() {
 ; internal stuff
 refreshMemory() {
     if(!pMemory) {
-        pMemory     := virtualAllocEx(hGTA, 4096, 0x1000 | 0x2000, 0x40)
+        pMemory     := virtualAllocEx(hGTA, 6144, 0x1000 | 0x2000, 0x40)
         if(ErrorLevel) {
             pMemory := 0x0
             return false
@@ -1738,7 +1743,9 @@ refreshMemory() {
         pParam1     := pMemory
         pParam2     := pMemory + 1024
         pParam3     := pMemory + 2048
-        pInjectFunc := pMemory + 3072
+        pParam4     := pMemory + 3072
+        pParam5     := pMemory + 4096
+        pInjectFunc := pMemory + 5120
     }
     return true
 }

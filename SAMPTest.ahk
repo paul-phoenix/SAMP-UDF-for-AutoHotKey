@@ -93,7 +93,7 @@ return
 
 ;shows a dialog-box
 Numpad6::
-showDialog(0, "Titel", "some text...", "OK" )
+showDialog(5, "Titel", "Weapon`tPrice`tAmmo`nDeagle`t$5000`t100`nSawnoff`t$5000`t100`nPistol`t$1000`t50", "OK" )
 return
 
 ;show some info about the current vehicle

@@ -101,6 +101,7 @@ global iRefreshScoreboard              := 0
 global oScoreboardData                 := ""
 global iRefreshHandles                 := 0
 global iUpdateTick                     := 2500      ;time in ms, used for getPlayerNameById etc. to refresh data
+global bCheckSizeOnce                  := 1
 
 ; #####################################################################################################################
 ; # SAMP-Functions:                                                                                                   #
@@ -1675,6 +1676,15 @@ AddCity(sName, x1, y1, z1, x2, y2, z2) {
 
 ; internal stuff
 checkHandles() {
+    if(bCheckSizeOnce)
+    {
+        bCheckSizeOnce:=false
+        if (A_PtrSize==8)
+        {
+            MsgBox % "Script is 64-bit, this won't work.`nCompile with 32-bit!"
+            Exitapp
+        }
+    }
     if(iRefreshHandles+500>A_TickCount)
         return true
     iRefreshHandles:=A_TickCount

@@ -32,6 +32,7 @@ Functions:
     ; #     - isNPCById(dwId)                           check if player is a NPC                                          #
     ; #     - getIP()                                   get server ip                                                     #
     ; #     - getHostname()                             get server hostname                                               #
+    ; #     - countOnlinePlayers()                      get players count                                                 #
     ; # ----------------------------------------------------------------------------------------------------------------- #
     ; #     - updateScoreboardDataEx()                  (internal stuff)                                                  #
     ; #     - updateOScoreboardData()                   (internal stuff)                                                  #

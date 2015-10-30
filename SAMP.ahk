@@ -128,6 +128,7 @@ global bCheckSizeOnce                  := 1
 ; #     - isNPCById(dwId)                           check if player is a NPC                                          #
 ; #     - getIP()                                   get server ip                                                     #
 ; #     - getHostname()                             get server hostname                                               #
+; #     - countOnlinePlayers()                      get players count                                                 #
 ; # ----------------------------------------------------------------------------------------------------------------- #
 ; #     - updateScoreboardDataEx()                  (internal stuff)                                                  #
 ; #     - updateOScoreboardData()                   (internal stuff)                                                  #
@@ -499,13 +500,6 @@ getPlayerNameById(dwId) {
     if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
         return ""
     
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        if(oScoreboardData[dwId])
-            return oScoreboardData[dwId].NAME
-        return ""
-    }
-    
     if(!updateOScoreboardData())
         return ""
     
@@ -521,16 +515,6 @@ getPlayerIdByName(wName) {
     wName := "" wName
     if(StrLen(wName) < 1 || StrLen(wName) > 20)
         return -1
-    
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        For i, o in oScoreboardData
-        {
-            if(InStr(o.NAME,wName)==1)
-                return i
-        }
-        return -1
-    }
     
     if(!updateOScoreboardData())
         return -1
@@ -551,13 +535,6 @@ getPlayerScoreById(dwId) {
     if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
         return ""
     
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        if(oScoreboardData[dwId])
-            return oScoreboardData[dwId].SCORE
-        return ""
-    }
-    
     if(!updateOScoreboardData())
         return ""
     
@@ -573,13 +550,6 @@ getPlayerPingById(dwId) {
     dwId := Floor(dwId)
     if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
         return -1
-        
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        if(oScoreboardData[dwId])
-            return oScoreboardData[dwId].PING
-        return -1
-    }
     
     if(!updateOScoreboardData())
         return -1
@@ -598,13 +568,6 @@ isNPCById(dwId) {
     dwId := Floor(dwId)
     if(dwId < 0 || dwId >= SAMP_PLAYER_MAX)
         return -1
-    
-    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
-    {
-        if(oScoreboardData[dwId])
-            return oScoreboardData[dwId].ISNPC
-        return -1
-    }
     
     if(!updateOScoreboardData())
         return -1
@@ -654,6 +617,20 @@ getHostname() {
     return hostname
 }
 
+; returns number of players on server
+countOnlinePlayers() {
+    if(!updateOScoreboardData())
+        return 0
+    
+    j := 0
+    For i, o in oScoreboardData
+    {
+        if(isNPCById(i)==0)
+            j += 1
+    }
+    return j
+}
+
 ; internal stuff
 updateScoreboardDataEx() {
     
@@ -698,6 +675,9 @@ updateScoreboardDataEx() {
 updateOScoreboardData() {
     if(!checkHandles())
         return 0
+    
+    if(iRefreshScoreboard+iUpdateTick > A_TickCount)
+        return 1
     
     oScoreboardData := []
     
